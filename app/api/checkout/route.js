@@ -5,7 +5,20 @@ const PRICE_IDS = {
   lifetime: process.env.STRIPE_PRICE_ID_LIFETIME,
 };
 
+// Pre-launch mode: keep this false in lockstep with CHECKOUT_ENABLED in
+// app/page.js, so checkout can't be triggered even via a direct API call
+// while the site is only open for interest registration. Flip both to true
+// together when ready to accept real payments.
+const CHECKOUT_ENABLED = false;
+
 export async function POST(request) {
+  if (!CHECKOUT_ENABLED) {
+    return Response.json(
+      { error: "Checkout isn't open yet — register your interest instead." },
+      { status: 403 }
+    );
+  }
+
   if (!process.env.STRIPE_SECRET_KEY) {
     return Response.json(
       {

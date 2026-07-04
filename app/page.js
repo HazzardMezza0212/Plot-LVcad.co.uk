@@ -11,6 +11,12 @@ const PLAN_BUTTON_TEXT = {
   lifetime: "Pay £299 & get licence key",
 };
 
+// Pre-launch mode: purchasing/checkout is switched off site-wide so people
+// can only learn about Flame and register interest — nobody can enter
+// payment/contact details or buy yet. Flip to true (and re-enable
+// app/api/checkout/route.js) when ready to open sales.
+const CHECKOUT_ENABLED = false;
+
 export default function Home() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -88,17 +94,25 @@ export default function Home() {
       <div className="grid-bg"></div>
 
       <nav>
-        <div className="logo">
-          PLOT-LV <span className="tag">FLAME</span>
-        </div>
+        <div className="logo">PLOT-LV</div>
         <div className="nav-links">
           <a href="#range">Range</a>
           <a href="#beta">Beta</a>
           <a href="#pricing">Pricing</a>
-          <a href="#signup">Sign up</a>
+          <a
+            href="#signup"
+            className={CHECKOUT_ENABLED ? "" : "locked"}
+            onClick={(e) => { if (!CHECKOUT_ENABLED) e.preventDefault(); }}
+          >
+            Sign up
+          </a>
           <a href="#contact">Contact</a>
         </div>
-        <a href="#pricing" className="nav-cta">
+        <a
+          href="#pricing"
+          className={`nav-cta${CHECKOUT_ENABLED ? "" : " locked"}`}
+          onClick={(e) => { if (!CHECKOUT_ENABLED) e.preventDefault(); }}
+        >
           Buy v1.0
         </a>
       </nav>
@@ -124,7 +138,11 @@ export default function Home() {
             didn&apos;t ask for.
           </p>
           <div className="cta-row">
-            <a href="#pricing" className="btn-primary">
+            <a
+              href="#pricing"
+              className={`btn-primary${CHECKOUT_ENABLED ? "" : " locked"}`}
+              onClick={(e) => { if (!CHECKOUT_ENABLED) e.preventDefault(); }}
+            >
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" />
               </svg>
@@ -177,7 +195,7 @@ export default function Home() {
               <text className="room-label" x="330" y="55">ZONE 02</text>
 
               <path className="escape" d="M105,120 L105,255 L175,255 L175,300" markerEnd="url(#arrowGreen)" />
-              <path className="escape delay1" d="M300,110 L300,255 L180,255" />
+              <path className="escape delay1" d="M300,110 L300,170 L210,170 L175,170 L175,300" markerEnd="url(#arrowGreen)" />
               <text className="escape-label" x="120" y="325">FIRE EXIT</text>
 
               <circle className="node-fill" cx="54" cy="62" r="13" />
@@ -265,7 +283,13 @@ export default function Home() {
             <div className="code">PLOT-LV-FLAME <span>v1.0</span></div>
             <h3>Flame</h3>
             <p className="desc">Fire alarm system layout and compliance checking. Device spacing and zoning against BS 5839 or EN 54, with a configurable report at the end.</p>
-            <a href="#pricing" className="pc-cta">Buy now →</a>
+            <a
+              href="#pricing"
+              className={`pc-cta${CHECKOUT_ENABLED ? "" : " locked"}`}
+              onClick={(e) => { if (!CHECKOUT_ENABLED) e.preventDefault(); }}
+            >
+              Buy now →
+            </a>
           </div>
           <div className="product-card disabled">
             <div className="code">PLOT-LV-FOV <span className="future-tag">(future)</span></div>
@@ -322,7 +346,7 @@ export default function Home() {
           <h2 className="display">Pricing</h2>
           <p>One licence, every standard update for a year. No subscription lock-in.</p>
         </div>
-        <div className="price-grid">
+        <div className={`price-grid${CHECKOUT_ENABLED ? "" : " preview-mode"}`}>
           <div className="price-card">
             <div className="ptag">Monthly</div>
             <div className="pnum">£19 <span>/ month</span></div>
@@ -333,7 +357,14 @@ export default function Home() {
               <li>Standards updates included</li>
               <li>Cancel anytime</li>
             </ul>
-            <a href="#signup" className="price-btn" onClick={() => setSelectedPlan("monthly")}>
+            <a
+              href="#signup"
+              className={`price-btn${CHECKOUT_ENABLED ? "" : " locked"}`}
+              onClick={(e) => {
+                if (!CHECKOUT_ENABLED) { e.preventDefault(); return; }
+                setSelectedPlan("monthly");
+              }}
+            >
               Start monthly
             </a>
           </div>
@@ -347,12 +378,23 @@ export default function Home() {
               <li>Priority email support</li>
               <li>Pays for itself in 16 months</li>
             </ul>
-            <a href="#signup" className="price-btn" onClick={() => setSelectedPlan("lifetime")}>
+            <a
+              href="#signup"
+              className={`price-btn${CHECKOUT_ENABLED ? "" : " locked"}`}
+              onClick={(e) => {
+                if (!CHECKOUT_ENABLED) { e.preventDefault(); return; }
+                setSelectedPlan("lifetime");
+              }}
+            >
               Buy lifetime
             </a>
           </div>
         </div>
-        <p className="price-foot">Secure checkout via Stripe · licence key issued immediately on payment</p>
+        <p className="price-foot">
+          {CHECKOUT_ENABLED
+            ? "Secure checkout via Stripe · licence key issued immediately on payment"
+            : "Preview pricing — checkout opens at public launch. Register your interest above to be notified."}
+        </p>
       </section>
 
       <section id="signup-contact">
@@ -360,30 +402,49 @@ export default function Home() {
           <div className="panel" id="signup">
             <div className="ptitle display">Checkout</div>
             <div className="pdesc">
-              Choose a plan above, then pay securely with Stripe — your Flame
-              licence key is issued the moment payment goes through.
+              {CHECKOUT_ENABLED
+                ? "Choose a plan above, then pay securely with Stripe — your Flame licence key is issued the moment payment goes through."
+                : "Checkout isn't open yet. Register your interest above and we'll email you the moment Flame beta purchases go live."}
             </div>
-            <div className={`plan-badge mono${selectedPlan ? "" : " unset"}`}>
-              {selectedPlan ? PLAN_LABELS[selectedPlan] : "No plan selected — pick one above ↑"}
-            </div>
-            <form onSubmit={handleCheckoutSubmit}>
-              <div className="field">
-                <label>Full name</label>
-                <input type="text" name="name" required />
-              </div>
-              <div className="field">
-                <label>Work email</label>
-                <input type="email" name="email" required />
-              </div>
-              <button className="submit-btn" type="submit" disabled={!selectedPlan || submitting}>
-                {submitting
-                  ? "Redirecting to secure checkout…"
-                  : selectedPlan
-                  ? PLAN_BUTTON_TEXT[selectedPlan]
-                  : "Select a plan to continue"}
-              </button>
-              {errorMsg && <p className="error-msg">{errorMsg}</p>}
-            </form>
+            {CHECKOUT_ENABLED ? (
+              <>
+                <div className={`plan-badge mono${selectedPlan ? "" : " unset"}`}>
+                  {selectedPlan ? PLAN_LABELS[selectedPlan] : "No plan selected — pick one above ↑"}
+                </div>
+                <form onSubmit={handleCheckoutSubmit}>
+                  <div className="field">
+                    <label>Full name</label>
+                    <input type="text" name="name" required />
+                  </div>
+                  <div className="field">
+                    <label>Work email</label>
+                    <input type="email" name="email" required />
+                  </div>
+                  <button className="submit-btn" type="submit" disabled={!selectedPlan || submitting}>
+                    {submitting
+                      ? "Redirecting to secure checkout…"
+                      : selectedPlan
+                      ? PLAN_BUTTON_TEXT[selectedPlan]
+                      : "Select a plan to continue"}
+                  </button>
+                  {errorMsg && <p className="error-msg">{errorMsg}</p>}
+                </form>
+              </>
+            ) : (
+              <form onSubmit={(e) => e.preventDefault()}>
+                <div className="field">
+                  <label>Full name</label>
+                  <input type="text" placeholder="Coming soon" disabled />
+                </div>
+                <div className="field">
+                  <label>Work email</label>
+                  <input type="email" placeholder="Coming soon" disabled />
+                </div>
+                <button className="submit-btn locked" type="submit" disabled>
+                  Coming soon
+                </button>
+              </form>
+            )}
           </div>
           <div className="panel" id="contact">
             <div className="ptitle display">Talk to us</div>

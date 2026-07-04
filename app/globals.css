@@ -62,6 +62,24 @@ nav{
 }
 .nav-cta:hover{transform:translateY(-1px); box-shadow:0 6px 18px rgba(232,71,44,.35);}
 
+/* LOCKED / COMING SOON — applied to any CTA disabled during pre-launch */
+.locked{
+  position:relative;
+  filter:grayscale(1);
+  opacity:.45;
+  cursor:not-allowed;
+  box-shadow:none !important;
+  transform:none !important;
+}
+.locked::after{
+  content:"(Coming soon)";
+  position:absolute; bottom:calc(100% + 8px); left:50%; transform:translateX(-50%);
+  background:var(--navy-deep); color:var(--paper); font-family:var(--font-jetbrains-mono); font-size:.68rem;
+  padding:6px 10px; border-radius:4px; border:1px solid var(--line); white-space:nowrap;
+  opacity:0; pointer-events:none; transition:opacity .15s ease; z-index:30;
+}
+.locked:hover::after{opacity:1;}
+
 section{position:relative; z-index:1; padding:120px 48px;}
 
 /* HERO */
@@ -200,6 +218,7 @@ svg.diagram{width:100%; height:auto; display:block;}
 .price-card.highlight .price-btn{background:var(--red); border-color:var(--red);}
 .price-btn:hover{transform:translateY(-1px);}
 .price-foot{text-align:center; margin-top:24px; font-family:var(--font-jetbrains-mono); font-size:.78rem; color:var(--slate);}
+.price-grid.preview-mode{opacity:.7;}
 
 /* BETA INTEREST BANNER */
 .beta-banner{
@@ -250,6 +269,7 @@ svg.diagram{width:100%; height:auto; display:block;}
 }
 .field input:focus, .field textarea:focus{outline:none; border-color:var(--red);}
 .field textarea{resize:vertical; min-height:100px;}
+.field input:disabled{opacity:.4; cursor:not-allowed;}
 .submit-btn{
   width:100%; background:var(--red); color:var(--paper); border:none;
   padding:15px; border-radius:4px; font-family:var(--font-jetbrains-mono); font-weight:600; font-size:.88rem; cursor:pointer;
