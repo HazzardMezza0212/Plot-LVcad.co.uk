@@ -1,0 +1,616 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Plot-LV — Flame · Fire Alarm Compliance CAD</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --navy:#0E1A28;
+    --navy-deep:#0A1420;
+    --paper:#F6F4EC;
+    --red:#E8472C;
+    --line:#3A5170;
+    --line-soft:#22344A;
+    --slate:#8FA1B5;
+    --green:#3FA66B;
+  }
+  *{margin:0;padding:0;box-sizing:border-box;}
+  html{scroll-behavior:smooth;}
+  body{
+    background:var(--navy);
+    color:var(--paper);
+    font-family:'Inter',sans-serif;
+    overflow-x:hidden;
+  }
+  .mono{font-family:'JetBrains Mono',monospace;}
+  .display{font-family:'Space Grotesk',sans-serif;}
+
+  /* faint blueprint grid */
+  .grid-bg{
+    position:fixed; inset:0; z-index:0; pointer-events:none;
+    background-image:
+      linear-gradient(var(--line-soft) 1px, transparent 1px),
+      linear-gradient(90deg, var(--line-soft) 1px, transparent 1px);
+    background-size:48px 48px;
+    opacity:.35;
+  }
+  .grid-bg::after{
+    content:"";
+    position:absolute; inset:0;
+    background:radial-gradient(ellipse at 50% 0%, rgba(14,26,40,0) 0%, var(--navy) 75%);
+  }
+
+  a{color:inherit; text-decoration:none;}
+  [id]{scroll-margin-top:100px;}
+
+  /* nav */
+  nav{
+    position:sticky; top:0; z-index:50;
+    display:flex; align-items:center; justify-content:space-between;
+    padding:20px 48px;
+    background:rgba(14,26,40,.82);
+    backdrop-filter:blur(8px);
+    border-bottom:1px solid var(--line-soft);
+  }
+  .logo{display:flex; align-items:center; gap:10px; font-family:'Space Grotesk'; font-weight:700; font-size:1.05rem; letter-spacing:.02em;}
+  .logo .tag{
+    font-family:'JetBrains Mono'; font-size:.62rem; color:var(--red);
+    border:1px solid var(--red); padding:2px 6px; border-radius:3px; letter-spacing:.08em;
+  }
+  .nav-links{display:flex; gap:32px; font-size:.88rem; color:var(--slate);}
+  .nav-links a{transition:color .2s;}
+  .nav-links a:hover{color:var(--paper);}
+  .nav-cta{
+    font-family:'JetBrains Mono'; font-size:.78rem; font-weight:500;
+    background:var(--red); color:var(--paper); padding:10px 18px;
+    border-radius:3px; letter-spacing:.03em;
+    transition:transform .15s, box-shadow .15s;
+  }
+  .nav-cta:hover{transform:translateY(-1px); box-shadow:0 6px 18px rgba(232,71,44,.35);}
+
+  section{position:relative; z-index:1; padding:120px 48px;}
+
+  /* HERO */
+  .hero{
+    padding:84px 48px 60px;
+    display:grid; grid-template-columns:1.05fr .95fr; gap:40px; align-items:center;
+    min-height:88vh;
+  }
+  .eyebrow{
+    font-family:'JetBrains Mono'; font-size:.78rem; color:var(--red);
+    letter-spacing:.12em; text-transform:uppercase; margin-bottom:18px;
+    display:flex; align-items:center; gap:10px;
+  }
+  .eyebrow::before{content:""; width:18px; height:1px; background:var(--red);}
+  h1{
+    font-family:'Space Grotesk'; font-weight:600; font-size:3.6rem; line-height:1.05;
+    letter-spacing:-.01em; margin-bottom:24px;
+  }
+  h1 em{font-style:normal; color:var(--red);}
+  .sub{font-size:1.08rem; color:var(--slate); max-width:520px; line-height:1.6; margin-bottom:40px;}
+  .cta-row{display:flex; gap:16px; align-items:center; flex-wrap:wrap;}
+  .btn-primary{
+    font-family:'JetBrains Mono'; font-weight:600; font-size:.95rem;
+    background:var(--red); color:var(--paper);
+    padding:18px 30px; border-radius:4px; display:inline-flex; align-items:center; gap:10px;
+    letter-spacing:.02em;
+    transition:transform .15s, background .15s;
+  }
+  .btn-primary:hover{transform:translateY(-2px); background:#d13d24;}
+  .btn-primary svg{width:16px; height:16px;}
+  .btn-secondary{
+    font-family:'JetBrains Mono'; font-size:.85rem; color:var(--slate);
+    border:1px solid var(--line); padding:17px 22px; border-radius:4px;
+    transition:border-color .2s, color .2s;
+  }
+  .btn-secondary:hover{border-color:var(--paper); color:var(--paper);}
+  .meta-row{display:flex; gap:28px; margin-top:28px; font-family:'JetBrains Mono'; font-size:.74rem; color:var(--slate);}
+  .meta-row span{display:flex; align-items:center; gap:6px;}
+  .dot{width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 8px var(--green);}
+
+  /* schematic */
+  .schematic-wrap{position:relative;}
+  .schematic-frame{
+    border:1px solid var(--line); border-radius:6px;
+    background:linear-gradient(180deg, rgba(58,81,112,.08), transparent);
+    padding:18px;
+  }
+  .frame-label{
+    display:flex; justify-content:space-between; font-family:'JetBrains Mono'; font-size:.68rem;
+    color:var(--slate); letter-spacing:.05em; margin-bottom:10px; padding:0 4px;
+  }
+  .frame-label .status{color:var(--green);}
+  svg.diagram{width:100%; height:auto; display:block;}
+  .diagram .wire{
+    fill:none; stroke:var(--line); stroke-width:1.6; stroke-dasharray:6 5;
+    stroke-dashoffset:300;
+    animation:draw 3.2s ease-out forwards;
+  }
+  .diagram .wire.delay1{animation-delay:.15s;}
+  .diagram .wire.delay2{animation-delay:.3s;}
+  .diagram .wire.delay3{animation-delay:.45s;}
+  @keyframes draw{ to{stroke-dashoffset:0;} }
+  .diagram .node-ring{fill:none; stroke:var(--paper); stroke-width:1.4;}
+  .diagram .node-fill{fill:var(--navy);}
+  .diagram text{font-family:'JetBrains Mono'; font-size:9px; fill:var(--slate); letter-spacing:.02em;}
+  .diagram .accent{stroke:var(--red); fill:var(--red);}
+  .diagram .dim{stroke:var(--line-soft); stroke-width:1;}
+  .diagram .pulse-dot{fill:var(--green); opacity:0; animation:fadeglow 3.2s ease-out forwards;}
+  @keyframes fadeglow{0%,80%{opacity:0;} 100%{opacity:1;}}
+  .diagram .wall{fill:none; stroke:var(--paper); stroke-width:3; stroke-linecap:square;}
+  .diagram .wall-thin{fill:none; stroke:var(--paper); stroke-width:2;}
+  .diagram .door-swing{fill:none; stroke:var(--line); stroke-width:1; stroke-dasharray:2 3;}
+  .diagram .door-leaf{stroke:var(--line); stroke-width:1.4;}
+  .diagram .room-fill{fill:rgba(246,244,236,.025);}
+  .diagram .room-label{fill:var(--slate); font-size:9px; letter-spacing:.08em;}
+  .diagram .escape{
+    fill:none; stroke:var(--green); stroke-width:1.8; stroke-dasharray:5 4;
+    stroke-dashoffset:200; animation:draw 3.6s ease-out forwards; animation-delay:.6s;
+  }
+  .diagram .escape-label{fill:var(--green); font-size:8px; letter-spacing:.06em;}
+  .legend{display:flex; flex-wrap:wrap; gap:16px; margin-top:14px; padding:0 4px; font-family:'JetBrains Mono'; font-size:.66rem; color:var(--slate);}
+  .legend span{display:flex; align-items:center; gap:6px;}
+  .legend .lg-dot{width:8px; height:8px; border-radius:50%; border:1.4px solid var(--paper);}
+  .legend .lg-sq{width:8px; height:8px; border:1.4px solid var(--paper);}
+  .legend .lg-line{width:14px; height:0; border-top:1.8px dashed var(--green);}
+
+  /* RANGE */
+  .range-head{text-align:center; margin-bottom:64px;}
+  .range-head h2{font-family:'Space Grotesk'; font-size:2.2rem; margin-bottom:14px;}
+  .range-head p{color:var(--slate); max-width:520px; margin:0 auto;}
+  .range-grid{display:grid; grid-template-columns:repeat(3,1fr); gap:24px; max-width:1180px; margin:0 auto;}
+  .product-card{
+    border:1px solid var(--line-soft); border-radius:8px; padding:32px 28px;
+    background:rgba(58,81,112,.05);
+    position:relative; overflow:hidden;
+    transition:border-color .25s, transform .25s;
+  }
+  .product-card.active{border-color:var(--red); background:rgba(232,71,44,.05);}
+  .product-card:hover{transform:translateY(-4px);}
+  .product-card .code{
+    font-family:'JetBrains Mono'; font-size:.7rem; color:var(--slate); letter-spacing:.08em;
+    display:flex; justify-content:space-between; margin-bottom:22px;
+  }
+  .product-card.active .code{color:var(--red);}
+  .future-tag{font-family:'JetBrains Mono'; font-size:.62rem; color:var(--slate); border:1px solid var(--line); padding:2px 8px; border-radius:3px;}
+  .product-card h3{font-family:'Space Grotesk'; font-size:1.5rem; margin-bottom:10px;}
+  .product-card p.desc{color:var(--slate); font-size:.92rem; line-height:1.6; margin-bottom:22px; min-height:65px;}
+  .product-card .pc-cta{font-family:'JetBrains Mono'; font-size:.8rem; color:var(--red); display:inline-flex; align-items:center; gap:6px;}
+  .product-card.disabled{opacity:.55;}
+  .product-card.disabled .pc-cta{color:var(--slate);}
+  .grain{
+    position:absolute; bottom:-30px; right:-30px; width:120px; height:120px;
+    border:1px solid var(--line-soft); border-radius:50%; opacity:.4;
+  }
+
+  /* PRICING */
+  .pricing{background:var(--navy-deep); border-top:1px solid var(--line-soft); border-bottom:1px solid var(--line-soft);}
+  .price-grid{display:grid; grid-template-columns:1fr 1fr; gap:0; max-width:980px; margin:0 auto; border:1px solid var(--line-soft); border-radius:8px; overflow:hidden;}
+  .price-card{padding:48px 40px; position:relative;}
+  .price-card:first-child{border-right:1px solid var(--line-soft);}
+  .price-card.highlight{background:rgba(232,71,44,.06);}
+  .price-card .ptag{font-family:'JetBrains Mono'; font-size:.7rem; color:var(--slate); letter-spacing:.08em; text-transform:uppercase; margin-bottom:18px;}
+  .price-card.highlight .ptag{color:var(--red);}
+  .price-card .pnum{font-family:'Space Grotesk'; font-size:2.6rem; margin-bottom:6px;}
+  .price-card .pnum span{font-size:1rem; color:var(--slate); font-family:'JetBrains Mono';}
+  .price-card ul{list-style:none; margin:28px 0 32px; color:var(--slate); font-size:.9rem; line-height:2;}
+  .price-card ul li::before{content:"— "; color:var(--line);}
+  .price-card.highlight ul li::before{color:var(--red);}
+  .price-btn{
+    display:block; text-align:center; font-family:'JetBrains Mono'; font-size:.85rem; font-weight:500;
+    padding:15px; border-radius:4px; border:1px solid var(--line);
+    transition:all .2s;
+  }
+  .price-card.highlight .price-btn{background:var(--red); border-color:var(--red);}
+  .price-btn:hover{transform:translateY(-1px);}
+  .price-foot{text-align:center; margin-top:24px; font-family:'JetBrains Mono'; font-size:.78rem; color:var(--slate);}
+
+  /* LEAN STRIP */
+  .leanstrip{
+    padding:0 48px 100px; position:relative; z-index:1;
+  }
+  .lean-inner{
+    max-width:1180px; margin:0 auto;
+    display:grid; grid-template-columns:repeat(4,1fr);
+    border-top:1px solid var(--line-soft); border-bottom:1px solid var(--line-soft);
+  }
+  .lean-item{padding:32px 28px; border-right:1px solid var(--line-soft);}
+  .lean-item:last-child{border-right:none;}
+  .lean-num{font-family:'JetBrains Mono'; font-size:.72rem; color:var(--red); margin-bottom:14px; letter-spacing:.06em;}
+  .lean-label{font-family:'Space Grotesk'; font-size:1.15rem; margin-bottom:8px;}
+  .lean-desc{color:var(--slate); font-size:.86rem; line-height:1.55;}
+
+  /* SIGNUP / CONTACT */
+  .split{display:grid; grid-template-columns:1fr 1fr; gap:64px; max-width:1180px; margin:0 auto;}
+  .panel{border:1px solid var(--line-soft); border-radius:8px; padding:40px;}
+  .panel .ptitle{font-family:'Space Grotesk'; font-size:1.5rem; margin-bottom:8px;}
+  .panel .pdesc{color:var(--slate); font-size:.9rem; margin-bottom:28px;}
+  .field{margin-bottom:18px;}
+  .field label{display:block; font-family:'JetBrains Mono'; font-size:.7rem; color:var(--slate); letter-spacing:.06em; margin-bottom:8px; text-transform:uppercase;}
+  .field input, .field textarea{
+    width:100%; background:var(--navy-deep); border:1px solid var(--line); border-radius:4px;
+    padding:13px 14px; color:var(--paper); font-family:'Inter'; font-size:.92rem;
+  }
+  .field input:focus, .field textarea:focus{outline:none; border-color:var(--red);}
+  .field textarea{resize:vertical; min-height:100px;}
+  .submit-btn{
+    width:100%; background:var(--red); color:var(--paper); border:none;
+    padding:15px; border-radius:4px; font-family:'JetBrains Mono'; font-weight:600; font-size:.88rem; cursor:pointer;
+    transition:transform .15s;
+  }
+  .submit-btn:hover{transform:translateY(-1px);}
+
+  .plan-badge{
+    display:inline-block; font-family:'JetBrains Mono'; font-size:.72rem; color:var(--red);
+    border:1px solid var(--red); padding:4px 10px; border-radius:3px; letter-spacing:.05em;
+    margin-bottom:22px;
+  }
+  .plan-badge.unset{color:var(--slate); border-color:var(--line);}
+  .field-row{display:grid; grid-template-columns:1fr 1fr; gap:14px;}
+  .submit-btn:disabled{opacity:.4; cursor:not-allowed;}
+  .submit-btn:disabled:hover{transform:none;}
+  .hidden{display:none !important;}
+  .signup-success{display:none;}
+  .signup-success.show{display:block;}
+  .key-box{
+    display:flex; align-items:center; justify-content:space-between; gap:12px;
+    background:var(--navy-deep); border:1px solid var(--line); border-radius:4px;
+    padding:16px 18px; margin-bottom:16px;
+  }
+  .key-box span{font-family:'JetBrains Mono'; font-size:1rem; letter-spacing:.04em;}
+  .copy-btn{
+    background:transparent; border:1px solid var(--line); color:var(--paper);
+    padding:8px 14px; border-radius:4px; font-family:'JetBrains Mono'; font-size:.75rem;
+    cursor:pointer; transition:border-color .2s, color .2s; white-space:nowrap;
+  }
+  .copy-btn:hover{border-color:var(--red); color:var(--red);}
+  .key-note{color:var(--slate); font-size:.85rem; line-height:1.6;}
+  .key-note a{color:var(--red);}
+  .cta-note{font-family:'JetBrains Mono'; font-size:.78rem; color:var(--slate); margin-top:18px;}
+  .cta-note a{color:var(--red);}
+
+  footer{
+    border-top:1px solid var(--line-soft); padding:36px 48px;
+    display:flex; justify-content:space-between; align-items:center;
+    font-family:'JetBrains Mono'; font-size:.72rem; color:var(--slate);
+  }
+
+  @media (max-width:900px){
+    .hero{grid-template-columns:1fr; padding-top:140px;}
+    h1{font-size:2.4rem;}
+    .range-grid{grid-template-columns:1fr;}
+    .price-grid{grid-template-columns:1fr;}
+    .price-card:first-child{border-right:none; border-bottom:1px solid var(--line-soft);}
+    .split{grid-template-columns:1fr; gap:32px;}
+    .nav-links{display:none;}
+    section{padding:80px 24px;}
+    nav{padding:16px 20px;}
+    .leanstrip{padding:0 20px 60px;}
+    .lean-inner{grid-template-columns:1fr;}
+    .lean-item{border-right:none; border-bottom:1px solid var(--line-soft);}
+    .lean-item:last-child{border-bottom:none;}
+  }
+
+  @media (prefers-reduced-motion: reduce){
+    .diagram .wire{animation:none; stroke-dashoffset:0;}
+    .diagram .escape{animation:none; stroke-dashoffset:0;}
+    .pulse-dot{animation:none; opacity:1;}
+  }
+</style>
+</head>
+<body>
+
+<div class="grid-bg"></div>
+
+<nav>
+  <div class="logo">PLOT-LV <span class="tag">FLAME</span></div>
+  <div class="nav-links">
+    <a href="#range">Range</a>
+    <a href="#pricing">Pricing</a>
+    <a href="#signup">Sign up</a>
+    <a href="#contact">Contact</a>
+  </div>
+  <a href="#pricing" class="nav-cta">Buy v1.0</a>
+</nav>
+
+<section class="hero">
+  <div>
+    <div class="eyebrow">Plot-LV / Flame — Fire Alarm Compliance</div>
+    <h1>Draw the layout.<br>Check the <em>standard</em>.<br>Ship it compliant.</h1>
+    <p class="sub">You draw your 2D fire alarm layout by hand — devices, zones, escape routes — and Plot-LV-Flame checks device spacing and zoning against the standard you select: BS 5839, EN 54, or your local code. It takes the guesswork out of compliance and prints a clear, configurable report to suit your own sign-off process. Runs entirely on your machine — your drawings never leave your computer. One standalone .exe, no plugins, no subscriptions you didn't ask for.</p>
+    <div class="cta-row">
+      <a href="#pricing" class="btn-primary">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16"/></svg>
+        Buy Flame v1.0
+      </a>
+      <a href="#signup" class="btn-secondary">Already purchased? →</a>
+    </div>
+    <div class="meta-row">
+      <span><span class="dot"></span> Runs 100% locally — no cloud upload</span>
+      <span>Windows · macOS</span>
+      <span>140MB install</span>
+    </div>
+    <p class="cta-note">A licence key is issued on purchase and required on first launch — <a href="#pricing">see pricing →</a></p>
+  </div>
+
+  <div class="schematic-wrap">
+    <div class="schematic-frame">
+      <div class="frame-label">
+        <span>DWG-FLAME-014 · GROUND FLOOR</span>
+        <span class="status">● COMPLIANT</span>
+      </div>
+      <svg class="diagram" viewBox="0 0 420 340" xmlns="http://www.w3.org/2000/svg">
+        <!-- dimension line -->
+        <line class="dim" x1="30" y1="22" x2="390" y2="22"/>
+        <line class="dim" x1="30" y1="16" x2="30" y2="28"/>
+        <line class="dim" x1="390" y1="16" x2="390" y2="28"/>
+        <text x="185" y="16">18.60 m</text>
+
+        <!-- room fills -->
+        <rect class="room-fill" x="30" y="40" width="180" height="260"/>
+        <rect class="room-fill" x="210" y="40" width="180" height="260"/>
+
+        <!-- outer walls with a gap for the fire exit on the south wall -->
+        <path class="wall" d="M30,40 L390,40 L390,300 L215,300"/>
+        <path class="wall" d="M145,300 L30,300 L30,40"/>
+
+        <!-- internal partition with a doorway gap -->
+        <path class="wall-thin" d="M210,40 L210,150"/>
+        <path class="wall-thin" d="M210,192 L210,300"/>
+        <path class="door-swing" d="M210,150 A42,42 0 0 1 252,192"/>
+        <line class="door-leaf" x1="210" y1="150" x2="252" y2="192"/>
+
+        <!-- fire exit door leaf -->
+        <line class="door-leaf" x1="145" y1="300" x2="145" y2="265"/>
+        <path class="door-swing" d="M145,265 A35,35 0 0 1 180,300"/>
+
+        <text class="room-label" x="140" y="55">ZONE 01</text>
+        <text class="room-label" x="330" y="55">ZONE 02</text>
+
+        <!-- escape routes to fire exit -->
+        <path class="escape" d="M105,120 L105,255 L175,255 L175,300" marker-end="url(#arrowGreen)"/>
+        <path class="escape delay1" d="M300,110 L300,255 L180,255" />
+        <text class="escape-label" x="120" y="325">FIRE EXIT</text>
+
+        <!-- panel -->
+        <circle class="node-fill" cx="54" cy="62" r="13"/>
+        <circle class="node-ring" cx="54" cy="62" r="13"/>
+        <text x="30" y="90">PANEL</text>
+
+        <!-- cable routing -->
+        <path class="wire" d="M67,62 L105,62 L105,120"/>
+        <path class="wire delay1" d="M54,75 L54,270 L120,270"/>
+        <path class="wire delay2" d="M210,60 L300,60 L300,110"/>
+        <path class="wire delay3" d="M300,60 L360,60 L360,225"/>
+
+        <!-- smoke detector: zone 01 -->
+        <circle class="node-fill" cx="105" cy="120" r="11"/>
+        <circle class="node-ring" cx="105" cy="120" r="11"/>
+        <circle class="node-ring" cx="105" cy="120" r="5"/>
+        <text x="70" y="105">SMOKE 01.1</text>
+
+        <!-- call point: zone 01, by exit -->
+        <rect class="node-fill" x="108" y="259" width="20" height="20" rx="3"/>
+        <rect class="node-ring" x="108" y="259" width="20" height="20" rx="3"/>
+        <text x="70" y="298">CALL PT</text>
+
+        <!-- smoke detector: zone 02 -->
+        <circle class="node-fill" cx="300" cy="110" r="11"/>
+        <circle class="node-ring" cx="300" cy="110" r="11"/>
+        <circle class="node-ring" cx="300" cy="110" r="5"/>
+        <text x="265" y="96">SMOKE 02.1</text>
+
+        <!-- sounder: zone 02 -->
+        <circle class="node-fill" cx="360" cy="225" r="11"/>
+        <circle class="accent" cx="360" cy="225" r="4"/>
+        <circle class="node-ring" cx="360" cy="225" r="11"/>
+        <text x="335" y="210">SOUNDER</text>
+
+        <defs>
+          <marker id="arrowGreen" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
+            <path d="M0,0 L8,4 L0,8 Z" fill="var(--green)"/>
+          </marker>
+        </defs>
+
+        <circle class="pulse-dot" cx="105" cy="120" r="2.5"/>
+        <circle class="pulse-dot" cx="300" cy="110" r="2.5"/>
+        <circle class="pulse-dot" cx="360" cy="225" r="2.5"/>
+        <circle class="pulse-dot" cx="118" cy="269" r="2.5"/>
+      </svg>
+      <div class="legend">
+        <span><span class="lg-dot"></span> Smoke detector</span>
+        <span><span class="lg-sq"></span> Call point</span>
+        <span><span class="lg-dot" style="border-color:var(--red)"></span> Sounder</span>
+        <span><span class="lg-line"></span> Escape route</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="leanstrip">
+  <div class="lean-inner">
+    <div class="lean-item">
+      <div class="lean-num">01</div>
+      <div class="lean-label">Local &amp; secure</div>
+      <div class="lean-desc">Everything runs on your machine. Your drawings and site layouts never leave your computer.</div>
+    </div>
+    <div class="lean-item">
+      <div class="lean-num">02</div>
+      <div class="lean-label">Standalone</div>
+      <div class="lean-desc">Not a plugin. No AutoCAD, no Revit, no host CAD package required.</div>
+    </div>
+    <div class="lean-item">
+      <div class="lean-num">03</div>
+      <div class="lean-label">Lean install</div>
+      <div class="lean-desc">One installer. Nothing else to download, license, or configure.</div>
+    </div>
+    <div class="lean-item">
+      <div class="lean-num">04</div>
+      <div class="lean-label">Direct &amp; reliable</div>
+      <div class="lean-desc">Draw, check, export — the same engine every time, with or without a connection.</div>
+    </div>
+  </div>
+</section>
+
+<section id="range">
+  <div class="range-head">
+    <h2 class="display">The Plot-LV range</h2>
+    <p>One CAD engine, one set of compliance rules per discipline. Flame is live — Security and Lux follow the same drafting workflow.</p>
+  </div>
+  <div class="range-grid">
+    <div class="product-card active">
+      <div class="grain"></div>
+      <div class="code">PLOT-LV-FLAME <span>v1.0</span></div>
+      <h3>Flame</h3>
+      <p class="desc">Fire alarm system layout and compliance checking. Device spacing and zoning against BS 5839 or EN 54, with a configurable report at the end.</p>
+      <a href="#pricing" class="pc-cta">Buy now →</a>
+    </div>
+    <div class="product-card disabled">
+      <div class="code">PLOT-LV-FOV <span class="future-tag">(future)</span></div>
+      <h3>FOV</h3>
+      <p class="desc">CCTV field-of-view and coverage modelling for security system layouts — camera placement, blind spots, lens specs.</p>
+      <span class="pc-cta">In development</span>
+    </div>
+    <div class="product-card disabled">
+      <div class="code">PLOT-LV-LUX <span class="future-tag">(future)</span></div>
+      <h3>Lux</h3>
+      <p class="desc">Lighting layout and illuminance compliance — lux level checks, emergency lighting spacing, and fitting schedules.</p>
+      <span class="pc-cta">In development</span>
+    </div>
+  </div>
+</section>
+
+<section class="pricing" id="pricing">
+  <div class="range-head">
+    <h2 class="display">Pricing</h2>
+    <p>One licence, every standard update for a year. No subscription lock-in.</p>
+  </div>
+  <div class="price-grid">
+    <div class="price-card">
+      <div class="ptag">Monthly</div>
+      <div class="pnum">£19 <span>/ month</span></div>
+      <ul>
+        <li>BS 5839 + EN 54 rulesets</li>
+        <li>DWG / DXF import & export</li>
+        <li>Unlimited projects</li>
+        <li>Standards updates included</li>
+        <li>Cancel anytime</li>
+      </ul>
+      <a href="#signup" class="price-btn" onclick="selectPlan('monthly')">Start monthly</a>
+    </div>
+    <div class="price-card highlight">
+      <div class="ptag">Lifetime — Best value</div>
+      <div class="pnum">£299 <span>/ once</span></div>
+      <ul>
+        <li>Everything in Monthly</li>
+        <li>One payment, yours forever</li>
+        <li>All future Flame updates</li>
+        <li>Priority email support</li>
+        <li>Pays for itself in 16 months</li>
+      </ul>
+      <a href="#signup" class="price-btn" onclick="selectPlan('lifetime')">Buy lifetime</a>
+    </div>
+  </div>
+  <p class="price-foot">Secure checkout · licence key issued immediately on payment</p>
+</section>
+
+<section id="signup-contact">
+  <div class="split">
+    <div class="panel" id="signup">
+      <div class="ptitle display">Checkout</div>
+      <div class="pdesc">Choose a plan above, pay securely, and your Flame licence key is issued immediately — no key is generated until payment goes through.</div>
+      <div class="plan-badge mono unset" id="planBadge">No plan selected — pick one above ↑</div>
+      <form id="signupForm">
+        <div class="field"><label>Full name</label><input type="text" required></div>
+        <div class="field"><label>Work email</label><input type="email" required></div>
+        <div class="field-row">
+          <div class="field"><label>Card number</label><input type="text" inputmode="numeric" placeholder="4242 4242 4242 4242" required></div>
+          <div class="field"><label>Expiry</label><input type="text" placeholder="MM/YY" required></div>
+        </div>
+        <div class="field"><label>CVC</label><input type="text" inputmode="numeric" placeholder="123" required style="max-width:120px;"></div>
+        <button class="submit-btn" type="submit" id="checkoutBtn" disabled>Select a plan to continue</button>
+      </form>
+      <div class="signup-success" id="signupSuccess">
+        <div class="key-box">
+          <span class="mono" id="licenseKeyValue">FLAME-XXXXX-XXXXX-XXXXX</span>
+          <button class="copy-btn" type="button" id="copyKeyBtn" onclick="copyLicenseKey()">Copy</button>
+        </div>
+        <p class="key-note">Payment received — save this key somewhere safe, you'll need it the first time you open Flame. <a href="assets/plot-lv-flame-v1.0-setup.exe" download>Download Flame v1.0 →</a></p>
+      </div>
+    </div>
+    <div class="panel" id="contact">
+      <div class="ptitle display">Talk to us</div>
+      <div class="pdesc">Multi-seat licensing, custom standards, or onboarding for your team.</div>
+      <form onsubmit="event.preventDefault(); this.querySelector('.submit-btn').textContent='Message sent ✓';">
+        <div class="field"><label>Email</label><input type="email" required></div>
+        <div class="field"><label>Message</label><textarea required></textarea></div>
+        <button class="submit-btn" type="submit">Send message</button>
+      </form>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <span>PLOT-LV © 2026 · Compliance CAD tools</span>
+  <span>FLAME · FOV (future) · LUX (future)</span>
+</footer>
+
+<script>
+  var selectedPlan = null;
+  var PLAN_LABELS = { monthly: 'Monthly — £19/mo', lifetime: 'Lifetime — £299 once' };
+  var PLAN_BUTTON_TEXT = { monthly: 'Pay £19 & get licence key', lifetime: 'Pay £299 & get licence key' };
+
+  function selectPlan(plan){
+    selectedPlan = plan;
+    var badge = document.getElementById('planBadge');
+    badge.textContent = PLAN_LABELS[plan];
+    badge.classList.remove('unset');
+    var btn = document.getElementById('checkoutBtn');
+    btn.textContent = PLAN_BUTTON_TEXT[plan];
+    btn.disabled = false;
+  }
+
+  function generateLicenseKey(){
+    var charset = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789'; // no 0/O, 1/I/L to avoid ambiguity
+    var groups = [];
+    for(var g = 0; g < 3; g++){
+      var bytes = new Uint8Array(5);
+      crypto.getRandomValues(bytes);
+      var group = '';
+      for(var i = 0; i < bytes.length; i++){ group += charset[bytes[i] % charset.length]; }
+      groups.push(group);
+    }
+    return 'FLAME-' + groups.join('-');
+  }
+
+  function showLicenseKey(key){
+    document.getElementById('signupForm').classList.add('hidden');
+    document.getElementById('licenseKeyValue').textContent = key;
+    document.getElementById('signupSuccess').classList.add('show');
+  }
+
+  function copyLicenseKey(){
+    var key = document.getElementById('licenseKeyValue').textContent;
+    navigator.clipboard.writeText(key);
+    var btn = document.getElementById('copyKeyBtn');
+    var original = btn.textContent;
+    btn.textContent = 'Copied ✓';
+    setTimeout(function(){ btn.textContent = original; }, 1500);
+  }
+
+  document.getElementById('signupForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    if(!selectedPlan) return; // no plan chosen — no key, no download
+    var key = generateLicenseKey();
+    localStorage.setItem('plotlv_license_key', key);
+    showLicenseKey(key);
+  });
+
+  var existingKey = localStorage.getItem('plotlv_license_key');
+  if(existingKey){ showLicenseKey(existingKey); }
+</script>
+</body>
+</html>
