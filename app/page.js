@@ -446,7 +446,7 @@ export default function Home() {
           </div>
           <div className="panel" id="contact">
             <div className="ptitle display">Talk to us</div>
-            <div className="pdesc">Multi-seat licensing, custom standards, or onboarding for your team.</div>
+            <div className="pdesc">We're building this alongside people who'll actually use it — feedback, feature recommendations, and questions are all welcome. Multi-seat licensing and custom standards enquiries too.</div>
             <form onSubmit={handleContactSubmit}>
               <div className="field">
                 <label>Email</label>
