@@ -16,6 +16,9 @@ export default function Home() {
   const [submitting, setSubmitting] = useState(false);
   const [errorMsg, setErrorMsg] = useState("");
   const [contactSent, setContactSent] = useState(false);
+  const [interestSubmitting, setInterestSubmitting] = useState(false);
+  const [interestSent, setInterestSent] = useState(false);
+  const [interestError, setInterestError] = useState("");
 
   async function handleCheckoutSubmit(e) {
     e.preventDefault();
@@ -58,6 +61,28 @@ export default function Home() {
     setContactSent(true);
   }
 
+  async function handleInterestSubmit(e) {
+    e.preventDefault();
+    setInterestSubmitting(true);
+    setInterestError("");
+
+    const formData = new FormData(e.target);
+    try {
+      const res = await fetch("/api/interest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: formData.get("email") }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || "Something went wrong.");
+      setInterestSent(true);
+    } catch (err) {
+      setInterestError(err.message);
+    } finally {
+      setInterestSubmitting(false);
+    }
+  }
+
   return (
     <>
       <div className="grid-bg"></div>
@@ -68,6 +93,7 @@ export default function Home() {
         </div>
         <div className="nav-links">
           <a href="#range">Range</a>
+          <a href="#beta">Beta</a>
           <a href="#pricing">Pricing</a>
           <a href="#signup">Sign up</a>
           <a href="#contact">Contact</a>
@@ -254,6 +280,41 @@ export default function Home() {
             <span className="pc-cta">In development</span>
           </div>
         </div>
+      </section>
+
+      <section className="beta-banner" id="beta">
+        <div className="beta-inner">
+          <div className="beta-copy">
+            <div className="ptag">Coming soon</div>
+            <h3>Flame beta — register your interest</h3>
+            <p>
+              We&apos;re opening a limited beta before general release. Leave
+              your email and we&apos;ll let you know the moment it&apos;s
+              ready.
+            </p>
+          </div>
+          <form className="beta-form" onSubmit={handleInterestSubmit}>
+            <input
+              type="email"
+              name="email"
+              placeholder="you@company.com"
+              required
+              disabled={interestSent}
+            />
+            <button
+              className="submit-btn"
+              type="submit"
+              disabled={interestSubmitting || interestSent}
+            >
+              {interestSent
+                ? "You're on the list ✓"
+                : interestSubmitting
+                ? "Adding you…"
+                : "Register interest"}
+            </button>
+          </form>
+        </div>
+        {interestError && <p className="error-msg beta-error">{interestError}</p>}
       </section>
 
       <section className="pricing" id="pricing">

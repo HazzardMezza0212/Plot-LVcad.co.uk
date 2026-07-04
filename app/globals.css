@@ -201,6 +201,27 @@ svg.diagram{width:100%; height:auto; display:block;}
 .price-btn:hover{transform:translateY(-1px);}
 .price-foot{text-align:center; margin-top:24px; font-family:var(--font-jetbrains-mono); font-size:.78rem; color:var(--slate);}
 
+/* BETA INTEREST BANNER */
+.beta-banner{
+  padding:56px 48px; background:rgba(63,166,107,.05);
+  border-top:1px solid var(--line-soft); border-bottom:1px solid var(--line-soft);
+}
+.beta-inner{
+  max-width:1180px; margin:0 auto;
+  display:flex; align-items:center; justify-content:space-between; gap:48px;
+}
+.beta-copy .ptag{color:var(--green);}
+.beta-copy h3{font-family:var(--font-space-grotesk); font-size:1.4rem; margin-bottom:8px;}
+.beta-copy p{color:var(--slate); font-size:.9rem; max-width:440px; line-height:1.55;}
+.beta-form{display:flex; gap:12px; flex-shrink:0;}
+.beta-form input{
+  width:260px; background:var(--navy-deep); border:1px solid var(--line); border-radius:4px;
+  padding:13px 14px; color:var(--paper); font-family:var(--font-inter); font-size:.92rem;
+}
+.beta-form input:focus{outline:none; border-color:var(--green);}
+.beta-form .submit-btn{background:var(--green); width:auto; white-space:nowrap; padding:13px 22px;}
+.beta-error{max-width:1180px; margin:14px auto 0; text-align:right;}
+
 /* LEAN STRIP */
 .leanstrip{
   padding:0 48px 100px; position:relative; z-index:1;

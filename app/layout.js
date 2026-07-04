@@ -20,7 +20,7 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata = {
-  title: "Plot-LV — Flame · Fire Alarm Compliance CAD",
+  title: "Plot-LV",
   description:
     "Draw your 2D fire alarm layout, check it against BS 5839 or EN 54, and print a configurable compliance report. Runs entirely on your machine.",
 };
