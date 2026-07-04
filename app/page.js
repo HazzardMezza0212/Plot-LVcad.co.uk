@@ -3,11 +3,11 @@
 import { useState } from "react";
 
 const PLAN_LABELS = {
-  monthly: "Monthly — £19/mo",
+  monthly: "Monthly — £19.99/mo",
   lifetime: "Lifetime — £299 once",
 };
 const PLAN_BUTTON_TEXT = {
-  monthly: "Pay £19 & get licence key",
+  monthly: "Pay £19.99 & get licence key",
   lifetime: "Pay £299 & get licence key",
 };
 
@@ -130,8 +130,7 @@ export default function Home() {
           <p className="sub">
             You draw your 2D fire alarm layout by hand — devices, zones, escape
             routes — and Plot-LV-Flame checks device spacing and zoning
-            against the standard you select: BS 5839, EN 54, or your local
-            code. It takes the guesswork out of compliance and prints a
+            against preset local standards. It takes the guesswork out of compliance and prints a
             clear, configurable report to suit your own sign-off process.
             Runs entirely on your machine — your drawings never leave your
             computer. One standalone .exe, no plugins, no subscriptions you
@@ -156,8 +155,7 @@ export default function Home() {
             <span>
               <span className="dot"></span> Runs 100% locally — no cloud upload
             </span>
-            <span>Windows · macOS</span>
-            <span>140MB install</span>
+            <span>Windows</span>
           </div>
           <p className="cta-note">
             A licence key is issued on purchase and required on first launch —{" "}
@@ -275,14 +273,14 @@ export default function Home() {
       <section id="range">
         <div className="range-head">
           <h2 className="display">The Plot-LV range</h2>
-          <p>One CAD engine, one set of compliance rules per discipline. Flame is live — Security and Lux follow the same drafting workflow.</p>
+          <p>One CAD engine, one set of compliance rules per discipline. Flame is on its way, with Security and Lux following shortly after.</p>
         </div>
         <div className="range-grid">
           <div className="product-card active">
             <div className="grain"></div>
             <div className="code">PLOT-LV-FLAME <span>v1.0</span></div>
             <h3>Flame</h3>
-            <p className="desc">Fire alarm system layout and compliance checking. Device spacing and zoning against BS 5839 or EN 54, with a configurable report at the end.</p>
+            <p className="desc">Fire alarm system layout and compliance checking. Device spacing and zoning against preset local standards, with a configurable report at the end.</p>
             <a
               href="#pricing"
               className={`pc-cta${CHECKOUT_ENABLED ? "" : " locked"}`}
@@ -349,9 +347,9 @@ export default function Home() {
         <div className={`price-grid${CHECKOUT_ENABLED ? "" : " preview-mode"}`}>
           <div className="price-card">
             <div className="ptag">Monthly</div>
-            <div className="pnum">£19 <span>/ month</span></div>
+            <div className="pnum">£19.99 <span>/ month</span></div>
             <ul>
-              <li>BS 5839 + EN 54 rulesets</li>
+              <li>Preset local standards</li>
               <li>DWG / DXF import & export</li>
               <li>Unlimited projects</li>
               <li>Standards updates included</li>
