@@ -62,6 +62,7 @@ export default function Home() {
       body: JSON.stringify({
         email: formData.get("email"),
         message: formData.get("message"),
+        company: formData.get("company"),
       }),
     });
     setContactSent(true);
@@ -77,7 +78,10 @@ export default function Home() {
       const res = await fetch("/api/interest", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: formData.get("email") }),
+        body: JSON.stringify({
+          email: formData.get("email"),
+          company: formData.get("company"),
+        }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong.");
@@ -317,6 +321,14 @@ export default function Home() {
           </div>
           <form className="beta-form" onSubmit={handleInterestSubmit}>
             <input
+              type="text"
+              name="company"
+              tabIndex={-1}
+              autoComplete="off"
+              className="hp-field"
+              aria-hidden="true"
+            />
+            <input
               type="email"
               name="email"
               placeholder="you@company.com"
@@ -448,6 +460,14 @@ export default function Home() {
             <div className="ptitle display">Talk to us</div>
             <div className="pdesc">We're building this alongside people who'll actually use it — feedback, feature recommendations, and questions are all welcome. Multi-seat licensing and custom standards enquiries too.</div>
             <form onSubmit={handleContactSubmit}>
+              <input
+                type="text"
+                name="company"
+                tabIndex={-1}
+                autoComplete="off"
+                className="hp-field"
+                aria-hidden="true"
+              />
               <div className="field">
                 <label>Email</label>
                 <input type="email" name="email" required />

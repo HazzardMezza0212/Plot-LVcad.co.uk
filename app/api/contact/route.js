@@ -1,7 +1,14 @@
 import { Resend } from "resend";
 
 export async function POST(request) {
-  const { email, message } = await request.json();
+  const { email, message, company } = await request.json();
+
+  // Honeypot: real visitors never see or fill this field, so a filled value
+  // means a bot. Report success without actually doing anything, so the bot
+  // doesn't know it was caught.
+  if (company) {
+    return Response.json({ ok: true });
+  }
 
   if (!email || !message) {
     return Response.json(

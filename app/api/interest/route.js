@@ -11,7 +11,15 @@ export async function POST(request) {
     );
   }
 
-  const { name, email } = await request.json();
+  const { name, email, company } = await request.json();
+
+  // Honeypot: real visitors never see or fill this field, so a filled value
+  // means a bot. Report success without actually doing anything, so the bot
+  // doesn't know it was caught.
+  if (company) {
+    return Response.json({ ok: true });
+  }
+
   if (!email) {
     return Response.json({ error: "Email is required." }, { status: 400 });
   }
