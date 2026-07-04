@@ -356,6 +356,13 @@ footer{
   .lean-inner{grid-template-columns:1fr;}
   .lean-item{border-right:none; border-bottom:1px solid var(--line-soft);}
   .lean-item:last-child{border-bottom:none;}
+  .beta-banner{padding:40px 24px;}
+  .beta-inner{flex-direction:column; align-items:flex-start; gap:24px;}
+  .beta-copy p{max-width:100%;}
+  .beta-form{width:100%; flex-direction:column;}
+  .beta-form input{width:100%;}
+  .beta-form .submit-btn{width:100%;}
+  .beta-error{text-align:left;}
 }
 
 @media (prefers-reduced-motion: reduce){
