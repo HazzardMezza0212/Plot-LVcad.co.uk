@@ -11,11 +11,12 @@ const PLAN_BUTTON_TEXT = {
   lifetime: "Pay £299 & get licence key",
 };
 
-// Pre-launch mode: purchasing/checkout is switched off site-wide so people
-// can only learn about Flame and register interest — nobody can enter
-// payment/contact details or buy yet. Flip to true (and re-enable
-// app/api/checkout/route.js) when ready to open sales.
-const CHECKOUT_ENABLED = false;
+// Checkout is controlled per-environment via NEXT_PUBLIC_CHECKOUT_ENABLED:
+// set to "true" in Vercel's Preview environment (Stripe test keys) while the
+// Production environment leaves it unset, so the live site stays in
+// register-interest mode until launch. Launch = set the var in Production
+// and redeploy — no code change. app/api/checkout/route.js reads the same var.
+const CHECKOUT_ENABLED = process.env.NEXT_PUBLIC_CHECKOUT_ENABLED === "true";
 
 export default function Home() {
   const [selectedPlan, setSelectedPlan] = useState(null);

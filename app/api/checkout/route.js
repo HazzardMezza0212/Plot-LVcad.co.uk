@@ -5,11 +5,10 @@ const PRICE_IDS = {
   lifetime: process.env.STRIPE_PRICE_ID_LIFETIME,
 };
 
-// Pre-launch mode: keep this false in lockstep with CHECKOUT_ENABLED in
-// app/page.js, so checkout can't be triggered even via a direct API call
-// while the site is only open for interest registration. Flip both to true
-// together when ready to accept real payments.
-const CHECKOUT_ENABLED = false;
+// Same env var as app/page.js, so checkout can't be triggered even via a
+// direct API call while the site is in register-interest mode. Enabled in
+// Vercel's Preview environment for testing; enabled in Production at launch.
+const CHECKOUT_ENABLED = process.env.NEXT_PUBLIC_CHECKOUT_ENABLED === "true";
 
 export async function POST(request) {
   if (!CHECKOUT_ENABLED) {
