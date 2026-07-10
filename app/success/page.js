@@ -1,13 +1,13 @@
 import Stripe from "stripe";
-import { getLicense } from "@/lib/licenseStore";
+import { getLicenseBySession } from "@/lib/licenseDb";
 
-// The webhook issues the key asynchronously — usually near-instant, but give
-// it a moment before giving up rather than racing it.
+// The webhook writes the licence to Postgres moments after payment — poll
+// briefly rather than racing it.
 async function waitForLicense(sessionId) {
-  let license = getLicense(sessionId);
+  let license = await getLicenseBySession(sessionId);
   for (let i = 0; i < 6 && !license; i++) {
     await new Promise((resolve) => setTimeout(resolve, 600));
-    license = getLicense(sessionId);
+    license = await getLicenseBySession(sessionId);
   }
   return license;
 }
@@ -23,10 +23,10 @@ export default async function SuccessPage({ searchParams }) {
     );
   }
 
-  if (!process.env.STRIPE_SECRET_KEY) {
+  if (!process.env.STRIPE_SECRET_KEY || !process.env.DATABASE_URL) {
     return (
       <main className="statusPage">
-        <p>Stripe isn&apos;t configured yet on this deployment.</p>
+        <p>This deployment isn&apos;t fully configured yet (Stripe/database missing).</p>
       </main>
     );
   }
@@ -60,6 +60,7 @@ export default async function SuccessPage({ searchParams }) {
       </div>
       <p className="key-note">
         Save this key somewhere safe — you&apos;ll need it the first time you open Flame.
+        We&apos;ve also emailed it to {license.email}. Your licence covers 2 machines.
       </p>
       <a href="/downloads/plot-lv-flame-v1.0-setup.exe" download className="btn-primary">
         Download Flame v1.0
