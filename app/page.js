@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 const PLAN_LABELS = {
   monthly: "Monthly — £19.99/mo",
@@ -18,6 +18,20 @@ const PLAN_BUTTON_TEXT = {
 // and redeploy — no code change. app/api/checkout/route.js reads the same var.
 const CHECKOUT_ENABLED = process.env.NEXT_PUBLIC_CHECKOUT_ENABLED === "true";
 
+// Celebration burst shown when someone registers interest. Colours are the
+// site palette; positions/rotations are randomised per signup.
+function makeBurst() {
+  const colors = ["#E8472C", "#3FA66B", "#F6F4EC", "#8FA1B5"];
+  return Array.from({ length: 46 }, (_, i) => ({
+    id: i,
+    x: `${Math.round((Math.random() - 0.5) * 380)}px`,
+    y: `${Math.round((Math.random() - 0.72) * 340)}px`,
+    r: `${Math.round((Math.random() - 0.5) * 720)}deg`,
+    d: `${(Math.random() * 0.15).toFixed(2)}s`,
+    c: colors[i % 4],
+  }));
+}
+
 export default function Home() {
   const [selectedPlan, setSelectedPlan] = useState(null);
   const [submitting, setSubmitting] = useState(false);
@@ -26,6 +40,14 @@ export default function Home() {
   const [interestSubmitting, setInterestSubmitting] = useState(false);
   const [interestSent, setInterestSent] = useState(false);
   const [interestError, setInterestError] = useState("");
+  const [burst, setBurst] = useState(null);
+
+  // Until React hydrates, form buttons would fall back to a native browser
+  // submit (a page reload that silently drops the submission — noticeable on
+  // phones, where dev-mode JS takes a moment to load). Keep them disabled
+  // until the handlers are actually attached.
+  const [ready, setReady] = useState(false);
+  useEffect(() => setReady(true), []);
 
   async function handleCheckoutSubmit(e) {
     e.preventDefault();
@@ -63,7 +85,7 @@ export default function Home() {
       body: JSON.stringify({
         email: formData.get("email"),
         message: formData.get("message"),
-        company: formData.get("company"),
+        company: formData.get("extra_info"),
       }),
     });
     setContactSent(true);
@@ -81,17 +103,92 @@ export default function Home() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           email: formData.get("email"),
-          company: formData.get("company"),
+          company: formData.get("extra_info"),
         }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Something went wrong.");
+      setBurst(makeBurst());
       setInterestSent(true);
     } catch (err) {
       setInterestError(err.message);
     } finally {
       setInterestSubmitting(false);
     }
+  }
+
+  // Rendered twice: a compact top variant that phones see first, and the
+  // full-width banner in the page flow for desktop. CSS shows one per
+  // breakpoint; state (sent/error/burst) is shared so they stay in sync.
+  function renderBetaSignup(variant) {
+    return (
+      <section
+        className={`beta-banner ${variant}${interestSent ? " registered" : ""}`}
+        id={variant === "beta-top" ? "beta-top" : "beta"}
+      >
+        <div className="beta-inner">
+          <div className="beta-copy">
+            <div className="ptag">Coming soon</div>
+            <h3>Flame beta — register your interest</h3>
+            <p>
+              We&apos;re opening a limited beta before general release. Leave
+              your email and we&apos;ll let you know the moment it&apos;s
+              ready.
+            </p>
+          </div>
+          <form className="beta-form" onSubmit={handleInterestSubmit}>
+            <input
+              type="text"
+              name="extra_info"
+              tabIndex={-1}
+              autoComplete="off"
+              className="hp-field"
+              aria-hidden="true"
+            />
+            <input
+              type="email"
+              name="email"
+              placeholder="you@company.com"
+              required
+              disabled={interestSent}
+            />
+            <button
+              className="submit-btn"
+              type="submit"
+              disabled={!ready || interestSubmitting || interestSent}
+            >
+              {interestSent
+                ? "You're on the list ✓"
+                : interestSubmitting
+                ? "Adding you…"
+                : "Register interest"}
+            </button>
+            {burst && (
+              <span className="confetti" aria-hidden="true">
+                {burst.map((p) => (
+                  <i
+                    key={p.id}
+                    style={{
+                      "--x": p.x,
+                      "--y": p.y,
+                      "--r": p.r,
+                      animationDelay: p.d,
+                      background: p.c,
+                    }}
+                  />
+                ))}
+              </span>
+            )}
+            {interestSent && (
+              <p className="beta-registered mono">
+                ● REGISTERED — we&apos;ll email you the moment the beta opens
+              </p>
+            )}
+          </form>
+        </div>
+        {interestError && <p className="error-msg beta-error">{interestError}</p>}
+      </section>
+    );
   }
 
   return (
@@ -121,6 +218,8 @@ export default function Home() {
           Buy v1.0
         </a>
       </nav>
+
+      {renderBetaSignup("beta-top")}
 
       <section className="hero">
         <div>
@@ -309,48 +408,7 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="beta-banner" id="beta">
-        <div className="beta-inner">
-          <div className="beta-copy">
-            <div className="ptag">Coming soon</div>
-            <h3>Flame beta — register your interest</h3>
-            <p>
-              We&apos;re opening a limited beta before general release. Leave
-              your email and we&apos;ll let you know the moment it&apos;s
-              ready.
-            </p>
-          </div>
-          <form className="beta-form" onSubmit={handleInterestSubmit}>
-            <input
-              type="text"
-              name="company"
-              tabIndex={-1}
-              autoComplete="off"
-              className="hp-field"
-              aria-hidden="true"
-            />
-            <input
-              type="email"
-              name="email"
-              placeholder="you@company.com"
-              required
-              disabled={interestSent}
-            />
-            <button
-              className="submit-btn"
-              type="submit"
-              disabled={interestSubmitting || interestSent}
-            >
-              {interestSent
-                ? "You're on the list ✓"
-                : interestSubmitting
-                ? "Adding you…"
-                : "Register interest"}
-            </button>
-          </form>
-        </div>
-        {interestError && <p className="error-msg beta-error">{interestError}</p>}
-      </section>
+      {renderBetaSignup("beta-main")}
 
       <section className="pricing" id="pricing">
         <div className="range-head">
@@ -463,7 +521,7 @@ export default function Home() {
             <form onSubmit={handleContactSubmit}>
               <input
                 type="text"
-                name="company"
+                name="extra_info"
                 tabIndex={-1}
                 autoComplete="off"
                 className="hp-field"
@@ -477,7 +535,7 @@ export default function Home() {
                 <label>Message</label>
                 <textarea name="message" required></textarea>
               </div>
-              <button className="submit-btn" type="submit">
+              <button className="submit-btn" type="submit" disabled={!ready}>
                 {contactSent ? "Message sent ✓" : "Send message"}
               </button>
             </form>
