@@ -262,6 +262,30 @@ svg.diagram{width:100%; height:auto; display:block;}
 .beta-form .submit-btn{background:var(--green); width:auto; white-space:nowrap; padding:13px 22px;}
 .beta-error{max-width:1180px; margin:14px auto 0; text-align:right;}
 
+/* top-of-page beta signup — phones only; desktop keeps the in-flow banner */
+.beta-top{display:none;}
+
+/* signup celebration */
+.beta-form{position:relative;}
+.confetti{position:absolute; inset:0; pointer-events:none; z-index:5;}
+.confetti i{
+  position:absolute; left:50%; top:50%;
+  width:9px; height:9px; border-radius:2px; opacity:0;
+  animation:burst 1.15s cubic-bezier(.12,.85,.35,1) forwards;
+}
+@keyframes burst{
+  0%{transform:translate(-50%,-50%) scale(1) rotate(0deg); opacity:1;}
+  70%{opacity:1;}
+  100%{transform:translate(calc(-50% + var(--x)), calc(-50% + var(--y))) scale(.55) rotate(var(--r)); opacity:0;}
+}
+.beta-registered{color:var(--green); font-size:.72rem; margin-top:12px; letter-spacing:.05em;}
+.beta-banner.registered{animation:regGlow 1.4s ease-out;}
+@keyframes regGlow{
+  0%{background:rgba(63,166,107,.05);}
+  25%{background:rgba(63,166,107,.22);}
+  100%{background:rgba(63,166,107,.05);}
+}
+
 /* LEAN STRIP */
 .leanstrip{
   padding:0 48px 100px; position:relative; z-index:1;
@@ -363,10 +387,18 @@ footer{
   .beta-form input{width:100%;}
   .beta-form .submit-btn{width:100%;}
   .beta-error{text-align:left;}
+  /* phones see the signup first: show the top variant, hide the in-flow one */
+  .beta-top{display:block; padding:28px 24px 32px;}
+  .beta-top .beta-inner{gap:16px;}
+  .beta-top h3{font-size:1.25rem;}
+  .beta-main{display:none;}
+  .hero{padding-top:56px;}
 }
 
 @media (prefers-reduced-motion: reduce){
   .diagram .wire{animation:none; stroke-dashoffset:0;}
   .diagram .escape{animation:none; stroke-dashoffset:0;}
   .pulse-dot{animation:none; opacity:1;}
+  .confetti{display:none;}
+  .beta-banner.registered{animation:none;}
 }
