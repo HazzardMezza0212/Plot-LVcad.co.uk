@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Link from "next/link";
 
 const PLAN_LABELS = {
   monthly: "Monthly — £19.99/mo",
@@ -197,6 +198,7 @@ export default function Home() {
       <nav>
         <div className="logo">PLOT-LV</div>
         <div className="nav-links">
+          <Link href="/flame">Flame</Link>
           <a href="#range">Range</a>
           <a href="#beta">Beta</a>
           <a href="#pricing">Pricing</a>
@@ -250,6 +252,9 @@ export default function Home() {
               </svg>
               Buy Flame v1.0
             </a>
+            <Link href="/flame" className="btn-secondary">
+              See what you&apos;re buying →
+            </Link>
             <a href="#signup" className="btn-secondary">
               Already purchased? →
             </a>
@@ -384,13 +389,9 @@ export default function Home() {
             <div className="code">PLOT-LV-FLAME <span>v1.0</span></div>
             <h3>Flame</h3>
             <p className="desc">Fire alarm system layout and compliance checking. Device spacing and zoning against preset local standards, with a configurable report at the end.</p>
-            <a
-              href="#pricing"
-              className={`pc-cta${CHECKOUT_ENABLED ? "" : " locked"}`}
-              onClick={(e) => { if (!CHECKOUT_ENABLED) e.preventDefault(); }}
-            >
-              Buy now →
-            </a>
+            <Link href="/flame" className="pc-cta">
+              What it does &amp; how validation works →
+            </Link>
           </div>
           <div className="product-card disabled">
             <div className="code">PLOT-LV-FOV <span className="future-tag">(future)</span></div>
@@ -516,7 +517,7 @@ export default function Home() {
           </div>
           <div className="panel" id="contact">
             <div className="ptitle display">Talk to us</div>
-            <div className="pdesc">We're building this alongside people who'll actually use it — feedback, feature recommendations, and questions are all welcome. Multi-seat licensing and custom standards enquiries too.</div>
+            <div className="pdesc">We&apos;re building this alongside people who&apos;ll actually use it — feedback, feature recommendations, and questions are all welcome. Multi-seat licensing and custom standards enquiries too.</div>
             <form onSubmit={handleContactSubmit}>
               <input
                 type="text"
@@ -549,3 +550,4 @@ export default function Home() {
     </>
   );
 }
+
