@@ -5,6 +5,15 @@ const nextConfig = {
   // default). The wildcard covers the router handing out a different IP each
   // day. Ignored entirely in production builds.
   allowedDevOrigins: ["192.168.1.*"],
+
+  // Temporary: serve the Plot-LV CCTV preview (static Vite build in
+  // public/cctv) at /cctv. Remove this and public/cctv to take it down.
+  async rewrites() {
+    return [
+      { source: "/cctv", destination: "/cctv/index.html" },
+      { source: "/cctv/", destination: "/cctv/index.html" },
+    ];
+  },
 };
 
 export default nextConfig;
