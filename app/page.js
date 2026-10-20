@@ -393,11 +393,14 @@ export default function Home() {
               What it does &amp; how validation works →
             </Link>
           </div>
-          <div className="product-card disabled">
-            <div className="code">PLOT-LV-FOV <span className="future-tag">(future)</span></div>
+          <div className="product-card">
+            <div className="code">PLOT-LV-FOV <span className="future-tag">(preview)</span></div>
             <h3>FOV</h3>
             <p className="desc">CCTV field-of-view and coverage modelling for security system layouts — camera placement, blind spots, lens specs.</p>
-            <span className="pc-cta">In development</span>
+            {/* /cctv is a static build in public/cctv, so use a plain link (full page load), not next/link. */}
+            <a href="/cctv" className="pc-cta">
+              Try the preview →
+            </a>
           </div>
           <div className="product-card disabled">
             <div className="code">PLOT-LV-LUX <span className="future-tag">(future)</span></div>
@@ -545,7 +548,7 @@ export default function Home() {
 
       <footer>
         <span>PLOT-LV © 2026 · Compliance CAD tools</span>
-        <span>FLAME · FOV (future) · LUX (future)</span>
+        <span>FLAME · FOV (preview) · LUX (future)</span>
       </footer>
     </>
   );

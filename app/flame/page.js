@@ -521,7 +521,7 @@ export default function FlamePage() {
 
       <footer>
         <span>PLOT-LV © 2026 · Compliance CAD tools</span>
-        <span>FLAME · FOV (future) · LUX (future)</span>
+        <span>FLAME · FOV (preview) · LUX (future)</span>
       </footer>
     </>
   );
