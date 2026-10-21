@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { createPortal } from "react-dom";
+import { track } from "@/lib/analytics";
 
 // "Launch FOV": a red ring grows from the button and fills the screen, then
 // the browser goes to /cctv, where the tool's own loading screen picks up on
@@ -19,6 +20,7 @@ export default function LaunchButton({
     if (origin) return;
     const r = e.currentTarget.getBoundingClientRect();
     setOrigin({ x: r.left + r.width / 2, y: r.top + r.height / 2 });
+    track("launch_clicked", { mode: href === "/guest" ? "guest" : "account" }, { beforeLeaving: true });
     const reduce = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     setTimeout(() => window.location.assign(href), reduce ? 50 : 820);
   }

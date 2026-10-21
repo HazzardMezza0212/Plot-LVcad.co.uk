@@ -4,6 +4,7 @@ import { useState } from "react";
 import Link from "next/link";
 import { getBrowserClient } from "@/lib/supabase/client";
 import { TextField, PasswordField, SubmitButton, Notice, friendlyError } from "./fields";
+import { track } from "@/lib/analytics";
 
 export default function LoginForm({ next }) {
   const [state, setState] = useState("idle");
@@ -28,6 +29,7 @@ export default function LoginForm({ next }) {
       return;
     }
     setState("done");
+    track("login_completed", { going_to_tool: next.startsWith("/cctv") }, { beforeLeaving: true });
     // Full navigation so the server sees the new session cookie straight away.
     setTimeout(() => window.location.assign(next), 650);
   }

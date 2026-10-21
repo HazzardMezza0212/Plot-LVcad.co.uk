@@ -70,7 +70,7 @@ export default function PrivacyPage() {
             </tr>
             <tr>
               <td>You visit the website</td>
-              <td>Anonymous, aggregated page-view statistics (no cookies, no individual profile). Our hosting providers also keep short-lived technical logs, such as IP addresses, to run and secure the service.</td>
+              <td>Anonymous, aggregated page-view statistics (no cookies, no individual profile), and anonymous usage events and session recordings showing how the site and FOV are used, such as pages visited, clicks and which tools are opened. Text you type into forms is masked and never recorded. Our hosting providers also keep short-lived technical logs, such as IP addresses, to run and secure the service.</td>
             </tr>
           </tbody>
         </table>
@@ -92,7 +92,7 @@ export default function PrivacyPage() {
             <tr><td>Product updates and launch news by email</td><td>Your consent. We only send these if you ticked the box or asked to hear about Flame. You can withdraw consent at any time.</td></tr>
             <tr><td>Replying to messages you send us</td><td>Legitimate interests: answering your enquiry.</td></tr>
             <tr><td>Keeping the service secure, preventing abuse and keeping records of consent</td><td>Legitimate interests, and our legal obligations.</td></tr>
-            <tr><td>Anonymous usage statistics to improve the website</td><td>Legitimate interests. No personal profile is built.</td></tr>
+            <tr><td>Anonymous usage statistics and session recordings to improve the website and FOV</td><td>Legitimate interests. No personal profile is built.</td></tr>
           </tbody>
         </table>
 
@@ -101,6 +101,7 @@ export default function PrivacyPage() {
         <ul>
           <li><strong>Supabase</strong>: account sign-in and the account database. Account data is stored in the European Union (Ireland).</li>
           <li><strong>Vercel</strong>: website hosting and anonymous page-view statistics (United States).</li>
+          <li><strong>PostHog</strong>: anonymous usage analytics and session recordings, without cookies. Data is stored in the European Union (Germany).</li>
           <li><strong>Resend</strong>: sending emails and holding our mailing list (United States).</li>
         </ul>
         <p>
@@ -150,8 +151,8 @@ export default function PrivacyPage() {
           <code>sb-…-auth-token</code>), plus one (<code>plv_guest</code>) that
           remembers if you chose to continue as a guest. They are strictly
           necessary for the service, so they don&apos;t need your consent. We don&apos;t use
-          advertising or tracking cookies, and our page-view statistics don&apos;t
-          use cookies. FOV stores some settings in your browser&apos;s local
+          advertising or tracking cookies, and our usage statistics don&apos;t
+          use cookies or local storage. FOV stores some settings in your browser&apos;s local
           storage, which never leaves your device.
         </p>
 

@@ -6,6 +6,7 @@ import { getBrowserClient } from "@/lib/supabase/client";
 import { TextField, PasswordField, Checkbox, SubmitButton, Notice, friendlyError } from "./fields";
 import { MARKETING_WORDING, TERMS_VERSION, PRIVACY_VERSION } from "@/lib/legal";
 import CheckEmail from "./CheckEmail";
+import { track } from "@/lib/analytics";
 
 export default function SignupForm() {
   const [state, setState] = useState("idle"); // idle | loading | done
@@ -51,6 +52,8 @@ export default function SignupForm() {
       setState("idle");
       return;
     }
+
+    track("signup_completed", { marketing_opt_in: form.get("marketing") === "on" }, { beforeLeaving: Boolean(data.session) });
 
     if (data.session) {
       // Email confirmation is off in Supabase: signed in straight away.
