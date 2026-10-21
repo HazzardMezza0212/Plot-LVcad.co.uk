@@ -1,5 +1,15 @@
 import Image from "next/image";
 import Link from "next/link";
+import SiteNav from "@/components/SiteNav";
+import SiteFooter from "@/components/SiteFooter";
+
+const NAV_LINKS = [
+  ["Showcase", "#showcase"],
+  ["How it works", "#how"],
+  ["Validation", "#validation"],
+  ["All products", "/#products"],
+  ["Contact", "/#contact"],
+];
 
 export const metadata = {
   title: "Flame — what it does, how it works, how validation works | Plot-LV",
@@ -238,29 +248,22 @@ export default function FlamePage() {
     <>
       <div className="grid-bg"></div>
 
-      <nav>
-        <Link href="/" className="logo">
-          PLOT-LV <span className="tag">FLAME</span>
-        </Link>
-        <div className="nav-links">
-          <a href="#showcase">Showcase</a>
-          <a href="#how">How it works</a>
-          <a href="#validation">Validation</a>
-          <Link href="/#pricing">Pricing</Link>
-          <Link href="/#contact">Contact</Link>
-        </div>
-        <Link href="/#beta" className="nav-cta">
-          Register interest
-        </Link>
-      </nav>
+      <SiteNav tag="FLAME" links={NAV_LINKS} />
 
       <section className="hero flame-hero">
         <div>
+          <div className="unavailable-banner">
+            <span className="status-pill closed">Not available to buy</span>
+            <span>
+              Flame is in closed development and isn&apos;t on sale. This page
+              shows how it works.
+            </span>
+          </div>
           <div className="eyebrow">Plot-LV / Flame — Product tour</div>
           <h1>
             Know exactly
             <br />
-            what you&apos;re <em>buying</em>.
+            what it <em>checks</em>.
           </h1>
           <p className="sub">
             Flame is a desktop tool for designing and validating fire detection
@@ -271,11 +274,11 @@ export default function FlamePage() {
             competent person can put their name to.
           </p>
           <div className="cta-row">
-            <Link href="/#beta" className="btn-primary">
-              Register for the beta
+            <Link href="/#updates" className="btn-primary">
+              Get told when it opens
             </Link>
-            <Link href="/#pricing" className="btn-secondary">
-              See pricing →
+            <Link href="/#products" className="btn-secondary">
+              All products →
             </Link>
           </div>
           <div className="meta-row">
@@ -471,8 +474,8 @@ export default function FlamePage() {
         <div className="range-head">
           <h2 className="display">What stays with you</h2>
           <p>
-            We&apos;d rather tell you the limits before you buy than have you
-            discover them after. These remain the competent person&apos;s
+            We&apos;d rather tell you the limits up front than have you
+            discover them later. These remain the competent person&apos;s
             responsibility — and the report says so.
           </p>
         </div>
@@ -502,27 +505,23 @@ export default function FlamePage() {
 
       <section className="flame-cta">
         <div className="fc-inner">
-          <h2 className="display">Ready to stop checking spacing by hand?</h2>
+          <h2 className="display">Flame isn&apos;t on sale yet</h2>
           <p>
-            Flame is opening as a limited beta first — register and you&apos;ll
-            hear the moment it&apos;s ready. Lifetime and monthly licences at
-            launch.
+            Register and you&apos;ll hear when it opens. In the meantime, FOV,
+            our CCTV coverage tool, is free to try.
           </p>
           <div className="cta-row fc-center">
-            <Link href="/#beta" className="btn-primary">
-              Register for the beta
+            <Link href="/#updates" className="btn-primary">
+              Get told when it opens
             </Link>
-            <Link href="/#pricing" className="btn-secondary">
-              See pricing →
+            <Link href="/signup" className="btn-secondary">
+              Try FOV free →
             </Link>
           </div>
         </div>
       </section>
 
-      <footer>
-        <span>PLOT-LV © 2026 · Compliance CAD tools</span>
-        <span>FLAME · FOV (preview) · LUX (future)</span>
-      </footer>
+      <SiteFooter />
     </>
   );
 }

@@ -2,13 +2,80 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <title>Plot-LV CCTV (preview)</title>
+    <title>Plot-LV FOV (preview)</title>
     <meta name="robots" content="noindex, nofollow" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!--
+      Loading screen. Plain HTML/CSS so it paints instantly, before the app's
+      JavaScript has downloaded. The small script at the end of <body> fades it
+      out once the page has loaded and a minimum time has passed, then removes
+      it. Nothing in src/ depends on it; delete #boot and that script to remove.
+    -->
+    <style>#boot{z-index:2147483647;color:#0e1a28;background-color:#fff;background-image:linear-gradient(#eef1f5 1px,#0000 1px),linear-gradient(90deg,#eef1f5 1px,#0000 1px);background-position:50%;background-repeat:repeat;background-size:32px 32px;background-attachment:scroll;background-origin:padding-box;background-clip:border-box;flex-direction:column;justify-content:center;align-items:center;gap:22px;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,sans-serif;transition:opacity .45s,transform .45s,visibility 0s linear .45s;display:flex;position:fixed;inset:0}#boot:before{content:"";pointer-events:none;background:radial-gradient(circle at 50% 46%,#fff0 0,#fff 62%);position:absolute;inset:0}#boot>*{position:relative}#boot.boot-done{opacity:0;visibility:hidden;transform:scale(1.02)}.boot-scope{width:168px;height:168px}.boot-scope .room{fill:#fff;stroke:#0e1a28;stroke-width:3px}.boot-scope .wall{stroke:#0e1a28;stroke-width:2px}.boot-scope .sweep{transform-origin:26px 26px;animation:2.2s ease-in-out infinite alternate boot-sweep}.boot-scope .wedge{fill:#e8472c21;stroke:#e8472c99;stroke-width:1.2px}.boot-scope .beam{stroke:#e8472c;stroke-width:1.4px;opacity:.8}.boot-scope .cam{fill:#e8472c;stroke:#fff;stroke-width:3px}.boot-scope .tgt{fill:#d3dae3;animation:2.2s ease-in-out infinite alternate boot-hit}.boot-scope .t2{animation-delay:.35s}.boot-scope .t3{animation-delay:.7s}.boot-scope .ring{fill:none;stroke:#e8472c;stroke-width:1.5px;transform-origin:26px 26px;animation:1.6s ease-out infinite boot-ping}@keyframes boot-sweep{0%{transform:rotate(-4deg)}to{transform:rotate(52deg)}}@keyframes boot-hit{0%,35%{fill:#d3dae3}60%,to{fill:#23804d}}@keyframes boot-ping{0%{opacity:.7;transform:scale(.6)}to{opacity:0;transform:scale(2.6)}}.boot-mark{letter-spacing:.04em;align-items:center;gap:10px;font-size:17px;font-weight:700;display:flex}.boot-mark span{color:#c9351c;letter-spacing:.1em;border:1px solid #e8472c;border-radius:3px;padding:3px 6px;font:600 10px/1 ui-monospace,JetBrains Mono,SFMono-Regular,Menlo,Consolas,monospace}.boot-bar{background:#e6eaf0;border-radius:3px;width:220px;height:3px;overflow:hidden}.boot-bar i{transform-origin:0;background:#e8472c;border-radius:3px;width:100%;height:100%;animation:1.4s cubic-bezier(.3,.7,.3,1) forwards boot-fill;display:block;transform:scaleX(.04)}#boot.boot-ready .boot-bar i{transition:transform .25s ease-out;animation:none;transform:scaleX(1)}@keyframes boot-fill{to{transform:scaleX(.86)}}.boot-status{color:#5b6b7e;letter-spacing:.12em;text-transform:uppercase;min-height:16px;font:500 11px/16px ui-monospace,JetBrains Mono,SFMono-Regular,Menlo,Consolas,monospace}.boot-foot{text-align:center;color:#8592a3;letter-spacing:.14em;font:500 10px/1 ui-monospace,JetBrains Mono,SFMono-Regular,Menlo,Consolas,monospace;bottom:22px;left:0;right:0;position:absolute!important}@media (prefers-reduced-motion:reduce){.boot-scope .sweep,.boot-scope .tgt,.boot-scope .ring,.boot-bar i{animation:none}.boot-scope .sweep{transform:rotate(24deg)}}</style>
     <script type="module" crossorigin src="/cctv/assets/index-CnLHWKcd.js"></script>
     <link rel="stylesheet" crossorigin href="/cctv/assets/index-D14oiaCx.css">
   </head>
   <body>
+    <div id="boot" role="status" aria-live="polite" aria-label="Loading Plot-LV FOV">
+      <svg class="boot-scope" viewBox="0 0 160 160" aria-hidden="true">
+        <defs><clipPath id="boot-clip"><rect x="12" y="12" width="136" height="136" /></clipPath></defs>
+        <rect class="room" x="12" y="12" width="136" height="136" rx="2" />
+        <path class="wall" d="M98 12 V62 M98 92 V148" />
+        <circle class="tgt" cx="120" cy="40" r="4" />
+        <circle class="tgt t2" cx="70" cy="104" r="4" />
+        <circle class="tgt t3" cx="124" cy="126" r="4" />
+        <g clip-path="url(#boot-clip)">
+          <g class="sweep">
+            <path class="wedge" d="M26 26 L150 56 A128 128 0 0 1 58 150 Z" />
+            <line class="beam" x1="26" y1="26" x2="128" y2="112" />
+          </g>
+        </g>
+        <rect x="12" y="12" width="136" height="136" rx="2" fill="none" stroke="#0e1a28" stroke-width="3" />
+        <circle class="ring" cx="26" cy="26" r="9" />
+        <circle class="cam" cx="26" cy="26" r="8" />
+      </svg>
+      <div class="boot-mark">PLOT-LV <span>FOV</span></div>
+      <div class="boot-bar"><i></i></div>
+      <div class="boot-status" id="boot-status">Loading camera library</div>
+      <div class="boot-foot">CCTV COVERAGE DESIGN · PREVIEW</div>
+    </div>
+
     <div id="root"></div>
+
+    <script>
+      (function () {
+        var boot = document.getElementById('boot');
+        var status = document.getElementById('boot-status');
+        if (!boot) return;
+        var reduce = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        var MIN_MS = reduce ? 300 : 1500;
+        var MAX_MS = 8000; // never block the app for longer than this
+        var start = Date.now();
+        var steps = ['Loading camera library', 'Building coverage engine', 'Preparing canvas'];
+        var i = 0;
+        var ticker = setInterval(function () {
+          i = Math.min(i + 1, steps.length - 1);
+          status.textContent = steps[i];
+        }, 480);
+        var finished = false;
+        function finish() {
+          if (finished) return;
+          finished = true;
+          clearInterval(ticker);
+          status.textContent = 'Ready';
+          boot.className = 'boot-ready';
+          setTimeout(function () {
+            boot.className = 'boot-ready boot-done';
+            setTimeout(function () { boot.remove(); }, 500);
+          }, reduce ? 0 : 260);
+        }
+        function whenLoaded() {
+          setTimeout(finish, Math.max(0, MIN_MS - (Date.now() - start)));
+        }
+        if (document.readyState === 'complete') whenLoaded();
+        else window.addEventListener('load', whenLoaded);
+        setTimeout(finish, MAX_MS);
+      })();
+    </script>
   </body>
 </html>

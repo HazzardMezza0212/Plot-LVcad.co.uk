@@ -2,26 +2,39 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import SiteNav from "@/components/SiteNav";
+import SiteFooter from "@/components/SiteFooter";
 
-const PLAN_LABELS = {
-  monthly: "Monthly — £19.99/mo",
-  lifetime: "Lifetime — £299 once",
-};
-const PLAN_BUTTON_TEXT = {
-  monthly: "Pay £19.99 & get licence key",
-  lifetime: "Pay £299 & get licence key",
-};
+// Flame is not on sale. Pricing and checkout were removed from this page
+// (see git history before this commit to restore them); app/api/checkout
+// is unchanged and still unused.
 
-// Pre-launch mode: purchasing/checkout is switched off site-wide so people
-// can only learn about Flame and register interest — nobody can enter
-// payment/contact details or buy yet. Flip to true (and re-enable
-// app/api/checkout/route.js) when ready to open sales.
-const CHECKOUT_ENABLED = false;
+const NAV_LINKS = [
+  ["Products", "#products"],
+  ["FOV", "#fov"],
+  ["Flame", "/flame"],
+  ["Contact", "#contact"],
+];
 
-// Celebration burst shown when someone registers interest. Colours are the
-// site palette; positions/rotations are randomised per signup.
+const FOV_FEATURES = [
+  "Coverage wedges, pixel density and DORI ranges per camera",
+  "Walls, doors and obstacles block the view by height",
+  "Security layers with a pass/fail coverage check per room",
+  "Camera point-of-view preview",
+  "Save projects as files, export the plan as PNG",
+];
+
+const FLAME_FEATURES = [
+  "Fire alarm layouts against BS 5839-1:2025",
+  "17 automated checks as you draw",
+  "Coverage, audibility, call-point reach, zoning, escape routes",
+  "Report a competent person can sign off",
+  "Windows desktop app, works fully offline",
+];
+
+// Celebration burst shown when someone registers for Flame updates.
 function makeBurst() {
-  const colors = ["#E8472C", "#3FA66B", "#F6F4EC", "#8FA1B5"];
+  const colors = ["#E8472C", "#23804D", "#0E1A28", "#8FA1B5"];
   return Array.from({ length: 46 }, (_, i) => ({
     id: i,
     x: `${Math.round((Math.random() - 0.5) * 380)}px`,
@@ -33,9 +46,6 @@ function makeBurst() {
 }
 
 export default function Home() {
-  const [selectedPlan, setSelectedPlan] = useState(null);
-  const [submitting, setSubmitting] = useState(false);
-  const [errorMsg, setErrorMsg] = useState("");
   const [contactSent, setContactSent] = useState(false);
   const [interestSubmitting, setInterestSubmitting] = useState(false);
   const [interestSent, setInterestSent] = useState(false);
@@ -43,38 +53,11 @@ export default function Home() {
   const [burst, setBurst] = useState(null);
 
   // Until React hydrates, form buttons would fall back to a native browser
-  // submit (a page reload that silently drops the submission — noticeable on
-  // phones, where dev-mode JS takes a moment to load). Keep them disabled
-  // until the handlers are actually attached.
+  // submit that silently drops the submission. Keep them disabled until the
+  // handlers are attached.
   const [ready, setReady] = useState(false);
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => setReady(true), []);
-
-  async function handleCheckoutSubmit(e) {
-    e.preventDefault();
-    if (!selectedPlan) return;
-
-    setSubmitting(true);
-    setErrorMsg("");
-
-    const formData = new FormData(e.target);
-    try {
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          plan: selectedPlan,
-          name: formData.get("name"),
-          email: formData.get("email"),
-        }),
-      });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Something went wrong.");
-      window.location.href = data.url;
-    } catch (err) {
-      setErrorMsg(err.message);
-      setSubmitting(false);
-    }
-  }
 
   async function handleContactSubmit(e) {
     e.preventDefault();
@@ -117,23 +100,189 @@ export default function Home() {
     }
   }
 
-  // Rendered twice: a compact top variant that phones see first, and the
-  // full-width banner in the page flow for desktop. CSS shows one per
-  // breakpoint; state (sent/error/burst) is shared so they stay in sync.
-  function renderBetaSignup(variant) {
-    return (
+  return (
+    <>
+      <div className="grid-bg"></div>
+
+      <SiteNav links={NAV_LINKS} />
+
+      <section className="hero hero-centered">
+        <div className="hero-inner">
+          <div className="eyebrow">Plot-LV — design tools for building services</div>
+          <h1>
+            Lay it out.
+            <br />
+            Check the <em>coverage</em>.
+            <br />
+            Hand it over.
+          </h1>
+          <p className="sub">
+            Plot-LV makes focused design tools for building services engineers.
+            FOV, for CCTV layouts, is free to try in your browser today. Flame,
+            for fire alarm layouts, is in closed development.
+          </p>
+          <div className="cta-row">
+            <Link href="/signup" className="btn-primary">
+              Try FOV free — create an account
+            </Link>
+            <Link href="/login" className="btn-secondary">
+              Log in →
+            </Link>
+          </div>
+          <div className="meta-row">
+            <span>
+              <span className="dot"></span> FOV preview open now
+            </span>
+            <span>Runs in your browser</span>
+            <span>Plans stay on your device</span>
+          </div>
+        </div>
+      </section>
+
+      <section className="leanstrip">
+        <div className="lean-inner">
+          <div className="lean-item">
+            <div className="lean-num">01</div>
+            <div className="lean-label">One job each</div>
+            <div className="lean-desc">Each tool covers one discipline and does it properly, rather than one bloated package.</div>
+          </div>
+          <div className="lean-item">
+            <div className="lean-num">02</div>
+            <div className="lean-label">Your drawings stay yours</div>
+            <div className="lean-desc">Plans are processed on your device. FOV runs in your browser; Flame runs on your PC.</div>
+          </div>
+          <div className="lean-item">
+            <div className="lean-num">03</div>
+            <div className="lean-label">No host CAD</div>
+            <div className="lean-desc">Not plugins. No AutoCAD, Revit or other CAD package needed.</div>
+          </div>
+          <div className="lean-item">
+            <div className="lean-num">04</div>
+            <div className="lean-label">Clear about limits</div>
+            <div className="lean-desc">Preview data is labelled unverified until it has been checked against datasheets.</div>
+          </div>
+        </div>
+      </section>
+
+      <section id="products" className="products">
+        <div className="range-head">
+          <h2 className="display">The Plot-LV range</h2>
+          <p>Two tools today, one open to try. More disciplines to follow.</p>
+        </div>
+
+        <div className="product-pair">
+          <article className="product-panel is-open" id="fov">
+            <div className="pp-head">
+              <span className="pp-code mono">PLOT-LV-FOV</span>
+              <span className="status-pill open">
+                <span className="dot"></span> Free preview · open now
+              </span>
+            </div>
+            <h3>FOV</h3>
+            <p className="pp-sub">CCTV coverage design</p>
+            <p className="pp-desc">
+              Load a floor plan, set the scale, draw walls and doors, then place
+              cameras and see exactly what each one covers.
+            </p>
+            <ul className="pp-list">
+              {FOV_FEATURES.map((f) => (
+                <li key={f}>{f}</li>
+              ))}
+            </ul>
+            <div className="pp-actions">
+              <Link href="/signup" className="btn-primary">
+                Create free account
+              </Link>
+              <Link href="/login" className="btn-secondary">
+                Log in
+              </Link>
+            </div>
+            <p className="pp-note mono">
+              Preview: camera data is marked unverified while it is checked
+              against manufacturer datasheets.
+            </p>
+          </article>
+
+          <article className="product-panel is-closed" id="flame">
+            <div className="pp-head">
+              <span className="pp-code mono">PLOT-LV-FLAME</span>
+              <span className="status-pill closed">Not available to buy</span>
+            </div>
+            <h3>Flame</h3>
+            <p className="pp-sub">Fire alarm layout &amp; compliance</p>
+            <p className="pp-desc">
+              Trace the building, place catalogue devices and watch every room
+              checked against the standard as you work.
+            </p>
+            <ul className="pp-list">
+              {FLAME_FEATURES.map((f) => (
+                <li key={f}>{f}</li>
+              ))}
+            </ul>
+            <div className="pp-actions">
+              <Link href="/flame" className="btn-secondary">
+                See how it works →
+              </Link>
+              <a href="#updates" className="btn-ghost">
+                Get updates
+              </a>
+            </div>
+            <p className="pp-note mono">
+              Flame isn&apos;t on sale at the moment. Register below to hear when
+              it opens.
+            </p>
+          </article>
+        </div>
+
+        <div className="next-up">
+          <span className="mono next-tag">Next up</span>
+          <span>
+            <strong>Lux</strong> — lighting layout and illuminance checks.
+            In development.
+          </span>
+        </div>
+      </section>
+
+      <section className="getstarted" id="start">
+        <div className="range-head">
+          <h2 className="display">Start with FOV in three steps</h2>
+          <p>Free while it&apos;s in preview. No card needed.</p>
+        </div>
+        <ol className="steps-row">
+          <li>
+            <span className="step-num mono">01</span>
+            <h4>Create your account</h4>
+            <p>Your name, work email and a password. Takes under a minute.</p>
+          </li>
+          <li>
+            <span className="step-num mono">02</span>
+            <h4>Open your workspace</h4>
+            <p>Your account page is where you launch FOV and manage your details.</p>
+          </li>
+          <li>
+            <span className="step-num mono">03</span>
+            <h4>Lay out your cameras</h4>
+            <p>Load a plan, set the scale, place cameras and check the coverage.</p>
+          </li>
+        </ol>
+        <div className="cta-row fc-center">
+          <Link href="/signup" className="btn-primary">
+            Create free account
+          </Link>
+        </div>
+      </section>
+
       <section
-        className={`beta-banner ${variant}${interestSent ? " registered" : ""}`}
-        id={variant === "beta-top" ? "beta-top" : "beta"}
+        className={`beta-banner${interestSent ? " registered" : ""}`}
+        id="updates"
       >
         <div className="beta-inner">
           <div className="beta-copy">
-            <div className="ptag">Coming soon</div>
-            <h3>Flame beta — register your interest</h3>
+            <div className="ptag mono">Flame · not on sale yet</div>
+            <h3>Get told when Flame opens</h3>
             <p>
-              We&apos;re opening a limited beta before general release. Leave
-              your email and we&apos;ll let you know the moment it&apos;s
-              ready.
+              Leave your email and we&apos;ll let you know when Flame is
+              available. One email, no spam.
             </p>
           </div>
           <form className="beta-form" onSubmit={handleInterestSubmit}>
@@ -149,6 +298,7 @@ export default function Home() {
               type="email"
               name="email"
               placeholder="you@company.com"
+              aria-label="Email address"
               required
               disabled={interestSent}
             />
@@ -161,7 +311,7 @@ export default function Home() {
                 ? "You're on the list ✓"
                 : interestSubmitting
                 ? "Adding you…"
-                : "Register interest"}
+                : "Notify me"}
             </button>
             {burst && (
               <span className="confetti" aria-hidden="true">
@@ -181,376 +331,47 @@ export default function Home() {
             )}
             {interestSent && (
               <p className="beta-registered mono">
-                ● REGISTERED — we&apos;ll email you the moment the beta opens
+                ● REGISTERED — we&apos;ll email you when Flame opens
               </p>
             )}
           </form>
         </div>
         {interestError && <p className="error-msg beta-error">{interestError}</p>}
       </section>
-    );
-  }
 
-  return (
-    <>
-      <div className="grid-bg"></div>
-
-      <nav>
-        <div className="logo">PLOT-LV</div>
-        <div className="nav-links">
-          <Link href="/flame">Flame</Link>
-          <a href="#range">Range</a>
-          <a href="#beta">Beta</a>
-          <a href="#pricing">Pricing</a>
-          <a
-            href="#signup"
-            className={CHECKOUT_ENABLED ? "" : "locked"}
-            onClick={(e) => { if (!CHECKOUT_ENABLED) e.preventDefault(); }}
-          >
-            Sign up
-          </a>
-          <a href="#contact">Contact</a>
-        </div>
-        <a
-          href="#pricing"
-          className={`nav-cta${CHECKOUT_ENABLED ? "" : " locked"}`}
-          onClick={(e) => { if (!CHECKOUT_ENABLED) e.preventDefault(); }}
-        >
-          Buy v1.0
-        </a>
-      </nav>
-
-      {renderBetaSignup("beta-top")}
-
-      <section className="hero">
-        <div>
-          <div className="eyebrow">Plot-LV / Flame — Fire Alarm Compliance</div>
-          <h1>
-            Draw the layout.
-            <br />
-            Check the <em>standard</em>.
-            <br />
-            Ship it compliant.
-          </h1>
-          <p className="sub">
-            You draw your 2D fire alarm layout by hand — devices, zones, escape
-            routes — and Plot-LV-Flame checks device spacing and zoning
-            against preset local standards. It takes the guesswork out of compliance and prints a
-            clear, configurable report to suit your own sign-off process.
-            Runs entirely on your machine — your drawings never leave your
-            computer. One standalone .exe, no plugins, no subscriptions you
-            didn&apos;t ask for.
-          </p>
-          <div className="cta-row">
-            <a
-              href="#pricing"
-              className={`btn-primary${CHECKOUT_ENABLED ? "" : " locked"}`}
-              onClick={(e) => { if (!CHECKOUT_ENABLED) e.preventDefault(); }}
-            >
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                <path d="M12 3v12m0 0l-4-4m4 4l4-4M4 21h16" />
-              </svg>
-              Buy Flame v1.0
-            </a>
-            <Link href="/flame" className="btn-secondary">
-              See what you&apos;re buying →
-            </Link>
-            <a href="#signup" className="btn-secondary">
-              Already purchased? →
-            </a>
+      <section id="contact" className="contact-section">
+        <div className="panel contact-panel">
+          <div className="ptitle display">Talk to us</div>
+          <div className="pdesc">
+            We&apos;re building these alongside the people who&apos;ll use them.
+            Feedback, feature requests and questions are all welcome, as are
+            multi-seat and custom-standard enquiries.
           </div>
-          <div className="meta-row">
-            <span>
-              <span className="dot"></span> Runs 100% locally — no cloud upload
-            </span>
-            <span>Windows</span>
-          </div>
-          <p className="cta-note">
-            A licence key is issued on purchase and required on first launch —{" "}
-            <a href="#pricing">see pricing →</a>
-          </p>
-        </div>
-
-        <div className="schematic-wrap">
-          <div className="schematic-frame">
-            <div className="frame-label">
-              <span>DWG-FLAME-014 · GROUND FLOOR</span>
-              <span className="status">● COMPLIANT</span>
+          <form onSubmit={handleContactSubmit}>
+            <input
+              type="text"
+              name="extra_info"
+              tabIndex={-1}
+              autoComplete="off"
+              className="hp-field"
+              aria-hidden="true"
+            />
+            <div className="field">
+              <label htmlFor="contact-email">Email</label>
+              <input id="contact-email" type="email" name="email" required />
             </div>
-            <svg className="diagram" viewBox="0 0 420 340" xmlns="http://www.w3.org/2000/svg">
-              <line className="dim" x1="30" y1="22" x2="390" y2="22" />
-              <line className="dim" x1="30" y1="16" x2="30" y2="28" />
-              <line className="dim" x1="390" y1="16" x2="390" y2="28" />
-              <text x="185" y="16">18.60 m</text>
-
-              <rect className="room-fill" x="30" y="40" width="180" height="260" />
-              <rect className="room-fill" x="210" y="40" width="180" height="260" />
-
-              <path className="wall" d="M30,40 L390,40 L390,300 L215,300" />
-              <path className="wall" d="M145,300 L30,300 L30,40" />
-
-              <path className="wall-thin" d="M210,40 L210,150" />
-              <path className="wall-thin" d="M210,192 L210,300" />
-              <path className="door-swing" d="M210,150 A42,42 0 0 1 252,192" />
-              <line className="door-leaf" x1="210" y1="150" x2="252" y2="192" />
-
-              <line className="door-leaf" x1="145" y1="300" x2="145" y2="265" />
-              <path className="door-swing" d="M145,265 A35,35 0 0 1 180,300" />
-
-              <text className="room-label" x="140" y="55">ZONE 01</text>
-              <text className="room-label" x="330" y="55">ZONE 02</text>
-
-              <path className="escape" d="M105,120 L105,255 L175,255 L175,300" markerEnd="url(#arrowGreen)" />
-              <path className="escape delay1" d="M300,110 L300,170 L210,170 L175,170 L175,300" markerEnd="url(#arrowGreen)" />
-              <text className="escape-label" x="120" y="325">FIRE EXIT</text>
-
-              <circle className="node-fill" cx="54" cy="62" r="13" />
-              <circle className="node-ring" cx="54" cy="62" r="13" />
-              <text x="30" y="90">PANEL</text>
-
-              <path className="wire" d="M67,62 L105,62 L105,120" />
-              <path className="wire delay1" d="M54,75 L54,270 L120,270" />
-              <path className="wire delay2" d="M210,60 L300,60 L300,110" />
-              <path className="wire delay3" d="M300,60 L360,60 L360,225" />
-
-              <circle className="node-fill" cx="105" cy="120" r="11" />
-              <circle className="node-ring" cx="105" cy="120" r="11" />
-              <circle className="node-ring" cx="105" cy="120" r="5" />
-              <text x="70" y="105">SMOKE 01.1</text>
-
-              <rect className="node-fill" x="108" y="259" width="20" height="20" rx="3" />
-              <rect className="node-ring" x="108" y="259" width="20" height="20" rx="3" />
-              <text x="70" y="298">CALL PT</text>
-
-              <circle className="node-fill" cx="300" cy="110" r="11" />
-              <circle className="node-ring" cx="300" cy="110" r="11" />
-              <circle className="node-ring" cx="300" cy="110" r="5" />
-              <text x="265" y="96">SMOKE 02.1</text>
-
-              <circle className="node-fill" cx="360" cy="225" r="11" />
-              <circle className="accent" cx="360" cy="225" r="4" />
-              <circle className="node-ring" cx="360" cy="225" r="11" />
-              <text x="335" y="210">SOUNDER</text>
-
-              <defs>
-                <marker id="arrowGreen" markerWidth="8" markerHeight="8" refX="4" refY="4" orient="auto">
-                  <path d="M0,0 L8,4 L0,8 Z" fill="var(--green)" />
-                </marker>
-              </defs>
-
-              <circle className="pulse-dot" cx="105" cy="120" r="2.5" />
-              <circle className="pulse-dot" cx="300" cy="110" r="2.5" />
-              <circle className="pulse-dot" cx="360" cy="225" r="2.5" />
-              <circle className="pulse-dot" cx="118" cy="269" r="2.5" />
-            </svg>
-            <div className="legend">
-              <span><span className="lg-dot"></span> Smoke detector</span>
-              <span><span className="lg-sq"></span> Call point</span>
-              <span><span className="lg-dot" style={{ borderColor: "var(--red)" }}></span> Sounder</span>
-              <span><span className="lg-line"></span> Escape route</span>
+            <div className="field">
+              <label htmlFor="contact-message">Message</label>
+              <textarea id="contact-message" name="message" required></textarea>
             </div>
-          </div>
+            <button className="submit-btn" type="submit" disabled={!ready}>
+              {contactSent ? "Message sent ✓" : "Send message"}
+            </button>
+          </form>
         </div>
       </section>
 
-      <section className="leanstrip">
-        <div className="lean-inner">
-          <div className="lean-item">
-            <div className="lean-num">01</div>
-            <div className="lean-label">Local &amp; secure</div>
-            <div className="lean-desc">Everything runs on your machine. Your drawings and site layouts never leave your computer.</div>
-          </div>
-          <div className="lean-item">
-            <div className="lean-num">02</div>
-            <div className="lean-label">Standalone</div>
-            <div className="lean-desc">Not a plugin. No AutoCAD, no Revit, no host CAD package required.</div>
-          </div>
-          <div className="lean-item">
-            <div className="lean-num">03</div>
-            <div className="lean-label">Lean install</div>
-            <div className="lean-desc">One installer. Nothing else to download, license, or configure.</div>
-          </div>
-          <div className="lean-item">
-            <div className="lean-num">04</div>
-            <div className="lean-label">Direct &amp; reliable</div>
-            <div className="lean-desc">Draw, check, export — the same engine every time, with or without a connection.</div>
-          </div>
-        </div>
-      </section>
-
-      <section id="range">
-        <div className="range-head">
-          <h2 className="display">The Plot-LV range</h2>
-          <p>One CAD engine, one set of compliance rules per discipline. Flame is on its way, with Security and Lux following shortly after.</p>
-        </div>
-        <div className="range-grid">
-          <div className="product-card active">
-            <div className="grain"></div>
-            <div className="code">PLOT-LV-FLAME <span>v1.0</span></div>
-            <h3>Flame</h3>
-            <p className="desc">Fire alarm system layout and compliance checking. Device spacing and zoning against preset local standards, with a configurable report at the end.</p>
-            <Link href="/flame" className="pc-cta">
-              What it does &amp; how validation works →
-            </Link>
-          </div>
-          <div className="product-card">
-            <div className="code">PLOT-LV-FOV <span className="future-tag">(preview)</span></div>
-            <h3>FOV</h3>
-            <p className="desc">CCTV field-of-view and coverage modelling for security system layouts — camera placement, blind spots, lens specs.</p>
-            {/* /cctv is a static build in public/cctv, so use a plain link (full page load), not next/link. */}
-            <a href="/cctv" className="pc-cta">
-              Try the preview →
-            </a>
-          </div>
-          <div className="product-card disabled">
-            <div className="code">PLOT-LV-LUX <span className="future-tag">(future)</span></div>
-            <h3>Lux</h3>
-            <p className="desc">Lighting layout and illuminance compliance — lux level checks, emergency lighting spacing, and fitting schedules.</p>
-            <span className="pc-cta">In development</span>
-          </div>
-        </div>
-      </section>
-
-      {renderBetaSignup("beta-main")}
-
-      <section className="pricing" id="pricing">
-        <div className="range-head">
-          <h2 className="display">Pricing</h2>
-          <p>One licence, every standard update for a year. No subscription lock-in.</p>
-        </div>
-        <div className={`price-grid${CHECKOUT_ENABLED ? "" : " preview-mode"}`}>
-          <div className="price-card">
-            <div className="ptag">Monthly</div>
-            <div className="pnum">£19.99 <span>/ month</span></div>
-            <ul>
-              <li>Preset local standards</li>
-              <li>DWG / DXF import & export</li>
-              <li>Unlimited projects</li>
-              <li>Standards updates included</li>
-              <li>Cancel anytime</li>
-            </ul>
-            <a
-              href="#signup"
-              className={`price-btn${CHECKOUT_ENABLED ? "" : " locked"}`}
-              onClick={(e) => {
-                if (!CHECKOUT_ENABLED) { e.preventDefault(); return; }
-                setSelectedPlan("monthly");
-              }}
-            >
-              Start monthly
-            </a>
-          </div>
-          <div className="price-card highlight">
-            <div className="ptag">Lifetime — Best value</div>
-            <div className="pnum">£299 <span>/ once</span></div>
-            <ul>
-              <li>Everything in Monthly</li>
-              <li>One payment, yours forever</li>
-              <li>All future Flame updates</li>
-              <li>Priority email support</li>
-              <li>Pays for itself in 16 months</li>
-            </ul>
-            <a
-              href="#signup"
-              className={`price-btn${CHECKOUT_ENABLED ? "" : " locked"}`}
-              onClick={(e) => {
-                if (!CHECKOUT_ENABLED) { e.preventDefault(); return; }
-                setSelectedPlan("lifetime");
-              }}
-            >
-              Buy lifetime
-            </a>
-          </div>
-        </div>
-        <p className="price-foot">
-          {CHECKOUT_ENABLED
-            ? "Secure checkout via Stripe · licence key issued immediately on payment"
-            : "Preview pricing — checkout opens at public launch. Register your interest above to be notified."}
-        </p>
-      </section>
-
-      <section id="signup-contact">
-        <div className="split">
-          <div className="panel" id="signup">
-            <div className="ptitle display">Checkout</div>
-            <div className="pdesc">
-              {CHECKOUT_ENABLED
-                ? "Choose a plan above, then pay securely with Stripe — your Flame licence key is issued the moment payment goes through."
-                : "Checkout isn't open yet. Register your interest above and we'll email you the moment Flame beta purchases go live."}
-            </div>
-            {CHECKOUT_ENABLED ? (
-              <>
-                <div className={`plan-badge mono${selectedPlan ? "" : " unset"}`}>
-                  {selectedPlan ? PLAN_LABELS[selectedPlan] : "No plan selected — pick one above ↑"}
-                </div>
-                <form onSubmit={handleCheckoutSubmit}>
-                  <div className="field">
-                    <label>Full name</label>
-                    <input type="text" name="name" required />
-                  </div>
-                  <div className="field">
-                    <label>Work email</label>
-                    <input type="email" name="email" required />
-                  </div>
-                  <button className="submit-btn" type="submit" disabled={!selectedPlan || submitting}>
-                    {submitting
-                      ? "Redirecting to secure checkout…"
-                      : selectedPlan
-                      ? PLAN_BUTTON_TEXT[selectedPlan]
-                      : "Select a plan to continue"}
-                  </button>
-                  {errorMsg && <p className="error-msg">{errorMsg}</p>}
-                </form>
-              </>
-            ) : (
-              <form onSubmit={(e) => e.preventDefault()}>
-                <div className="field">
-                  <label>Full name</label>
-                  <input type="text" placeholder="Coming soon" disabled />
-                </div>
-                <div className="field">
-                  <label>Work email</label>
-                  <input type="email" placeholder="Coming soon" disabled />
-                </div>
-                <button className="submit-btn locked" type="submit" disabled>
-                  Coming soon
-                </button>
-              </form>
-            )}
-          </div>
-          <div className="panel" id="contact">
-            <div className="ptitle display">Talk to us</div>
-            <div className="pdesc">We&apos;re building this alongside people who&apos;ll actually use it — feedback, feature recommendations, and questions are all welcome. Multi-seat licensing and custom standards enquiries too.</div>
-            <form onSubmit={handleContactSubmit}>
-              <input
-                type="text"
-                name="extra_info"
-                tabIndex={-1}
-                autoComplete="off"
-                className="hp-field"
-                aria-hidden="true"
-              />
-              <div className="field">
-                <label>Email</label>
-                <input type="email" name="email" required />
-              </div>
-              <div className="field">
-                <label>Message</label>
-                <textarea name="message" required></textarea>
-              </div>
-              <button className="submit-btn" type="submit" disabled={!ready}>
-                {contactSent ? "Message sent ✓" : "Send message"}
-              </button>
-            </form>
-          </div>
-        </div>
-      </section>
-
-      <footer>
-        <span>PLOT-LV © 2026 · Compliance CAD tools</span>
-        <span>FLAME · FOV (preview) · LUX (future)</span>
-      </footer>
+      <SiteFooter />
     </>
   );
 }
-
