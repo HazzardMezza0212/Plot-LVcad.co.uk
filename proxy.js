@@ -41,7 +41,11 @@ export async function proxy(request) {
   const isProtected = pathname === "/cctv" || pathname.startsWith("/cctv/") || pathname === "/account" || pathname.startsWith("/account/");
   const isAuthPage = pathname === "/login" || pathname === "/signup";
 
-  if (isProtected && !signedIn) {
+  // Guests (who chose "Continue as guest") may open the tool, not the account area.
+  const isTool = pathname === "/cctv" || pathname.startsWith("/cctv/");
+  const isGuest = request.cookies.get("plv_guest")?.value === "1";
+
+  if (isProtected && !signedIn && !(isTool && isGuest)) {
     const url = request.nextUrl.clone();
     url.pathname = "/login";
     url.search = `?next=${encodeURIComponent(pathname + search)}`;

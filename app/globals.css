@@ -919,3 +919,21 @@ footer{background:var(--bg);}
 .legal th{font-family:var(--font-jetbrains-mono); font-size:.7rem; letter-spacing:.06em; text-transform:uppercase; color:var(--muted);}
 @media (max-width:900px){ .legal h1{font-size:2rem;} .legal table{font-size:.8rem;} .footer-links{justify-content:center;} }
 @media (max-width:900px){ .beta-form .form-privacy{position:static;} }
+
+/* ============ GUEST OPTION ============ */
+.guest-option{display:flex; flex-direction:column; align-items:center; gap:6px; margin-top:18px;}
+.guest-option.compact{align-items:flex-start; margin-top:14px;}
+.guest-link{
+  background:none; border:none; padding:4px 2px; cursor:pointer;
+  font-family:var(--font-jetbrains-mono); font-size:.85rem; color:var(--ink);
+  border-bottom:1px solid var(--line); transition:border-color .2s, color .2s;
+}
+.guest-link:hover{color:var(--red-ink); border-color:var(--red);}
+.guest-link:disabled{opacity:.6; cursor:default;}
+.guest-terms{font-size:.74rem; color:var(--muted); line-height:1.5;}
+.guest-terms a{color:var(--red-ink); text-decoration:underline;}
+.auth-guest{margin-top:26px; text-align:center;}
+.auth-or{display:flex; align-items:center; gap:12px; font-size:.7rem; color:var(--muted); letter-spacing:.1em; text-transform:uppercase; margin-bottom:16px;}
+.auth-or::before, .auth-or::after{content:""; flex:1; height:1px; background:var(--line-soft);}
+.auth-guest-btn{width:100%; padding:14px; font-size:.85rem; cursor:pointer;}
+.auth-guest .guest-terms{margin-top:10px;}

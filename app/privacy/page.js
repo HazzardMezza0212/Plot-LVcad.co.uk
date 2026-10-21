@@ -147,8 +147,9 @@ export default function PrivacyPage() {
         <h2>7. Cookies and similar storage</h2>
         <p>
           We use only the cookies needed to keep you signed in (named{" "}
-          <code>sb-…-auth-token</code>). They are strictly necessary for the
-          service, so they don&apos;t need your consent. We don&apos;t use
+          <code>sb-…-auth-token</code>), plus one (<code>plv_guest</code>) that
+          remembers if you chose to continue as a guest. They are strictly
+          necessary for the service, so they don&apos;t need your consent. We don&apos;t use
           advertising or tracking cookies, and our page-view statistics don&apos;t
           use cookies. FOV stores some settings in your browser&apos;s local
           storage, which never leaves your device.

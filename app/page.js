@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
+import LaunchButton from "@/components/LaunchButton";
 
 // Flame is not on sale. Pricing and checkout were removed from this page
 // (see git history before this commit to restore them); app/api/checkout
@@ -31,6 +32,19 @@ const FLAME_FEATURES = [
   "Report a competent person can sign off",
   "Windows desktop app, works fully offline",
 ];
+
+// "Continue as guest": opens FOV without an account (see app/guest/route.js).
+function GuestOption({ compact = false }) {
+  return (
+    <div className={`guest-option${compact ? " compact" : ""}`}>
+      <LaunchButton href="/guest" label="Continue as guest →" className="guest-link" icon={false} />
+      <span className="guest-terms">
+        No account needed. By continuing you agree to the{" "}
+        <Link href="/terms">terms of use</Link>.
+      </span>
+    </div>
+  );
+}
 
 // Celebration burst shown when someone registers for Flame updates.
 function makeBurst() {
@@ -138,6 +152,7 @@ export default function Home() {
               Log in →
             </Link>
           </div>
+          <GuestOption />
           <div className="meta-row">
             <span>
               <span className="dot"></span> FOV preview open now
@@ -206,6 +221,7 @@ export default function Home() {
                 Log in
               </Link>
             </div>
+            <GuestOption compact />
             <p className="pp-note mono">
               Preview: camera data is marked unverified while it is checked
               against manufacturer datasheets.
