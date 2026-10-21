@@ -29,12 +29,19 @@ export async function POST(request) {
 
   const { error } = await resend.contacts.create({
     email,
+    unsubscribed: false,
     firstName: firstName || undefined,
     lastName: rest.join(" ") || undefined,
   });
 
   if (error) {
-    return Response.json({ error: error.message }, { status: 500 });
+    // Already on the list (perhaps unsubscribed earlier): they've just asked
+    // again, so re-subscribe them.
+    if (/already exists|duplicate/i.test(error.message || "")) {
+      const { error: updateError } = await resend.contacts.update({ email, unsubscribed: false });
+      if (!updateError) return Response.json({ ok: true });
+    }
+    return Response.json({ error: "Couldn't add you just now. Please try again." }, { status: 500 });
   }
 
   return Response.json({ ok: true });

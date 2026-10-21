@@ -56,8 +56,12 @@ export default function Home() {
   // submit that silently drops the submission. Keep them disabled until the
   // handlers are attached.
   const [ready, setReady] = useState(false);
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => setReady(true), []);
+  const [deleted, setDeleted] = useState(false);
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setReady(true);
+    setDeleted(new URLSearchParams(window.location.search).get("deleted") === "1");
+  }, []);
 
   async function handleContactSubmit(e) {
     e.preventDefault();
@@ -105,6 +109,11 @@ export default function Home() {
       <div className="grid-bg"></div>
 
       <SiteNav links={NAV_LINKS} />
+      {deleted && (
+        <div className="home-notice" role="status">
+          Your account and its data have been deleted, and you&apos;ve been removed from our mailing list.
+        </div>
+      )}
 
       <section className="hero hero-centered">
         <div className="hero-inner">
@@ -329,9 +338,14 @@ export default function Home() {
                 ))}
               </span>
             )}
-            {interestSent && (
+            {interestSent ? (
               <p className="beta-registered mono">
                 ● REGISTERED — we&apos;ll email you when Flame opens
+              </p>
+            ) : (
+              <p className="form-privacy">
+                We&apos;ll only email you about Plot-LV, and you can unsubscribe
+                at any time. <Link href="/privacy">Privacy notice</Link>
               </p>
             )}
           </form>
@@ -367,6 +381,10 @@ export default function Home() {
             <button className="submit-btn" type="submit" disabled={!ready}>
               {contactSent ? "Message sent ✓" : "Send message"}
             </button>
+            <p className="form-privacy">
+              We&apos;ll use your email only to reply to you.{" "}
+              <Link href="/privacy">Privacy notice</Link>
+            </p>
           </form>
         </div>
       </section>

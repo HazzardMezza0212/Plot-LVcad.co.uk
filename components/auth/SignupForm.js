@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { getBrowserClient } from "@/lib/supabase/client";
-import { TextField, PasswordField, SubmitButton, Notice, friendlyError } from "./fields";
+import { TextField, PasswordField, Checkbox, SubmitButton, Notice, friendlyError } from "./fields";
+import { MARKETING_WORDING, TERMS_VERSION, PRIVACY_VERSION } from "@/lib/legal";
 import CheckEmail from "./CheckEmail";
 
 export default function SignupForm() {
@@ -21,6 +22,10 @@ export default function SignupForm() {
       setError("Use at least 8 characters for your password.");
       return;
     }
+    if (!form.get("terms")) {
+      setError("Please agree to the terms of use to create an account.");
+      return;
+    }
     setError("");
     setState("loading");
 
@@ -31,6 +36,11 @@ export default function SignupForm() {
         data: {
           full_name: String(form.get("name")).trim(),
           company: String(form.get("company") || "").trim(),
+          // Only an explicit tick counts as consent. The database records
+          // this choice, with the wording shown, in the consent log.
+          marketing_opt_in: form.get("marketing") === "on",
+          terms_version: TERMS_VERSION,
+          privacy_version: PRIVACY_VERSION,
         },
         emailRedirectTo: `${window.location.origin}/auth/confirm?next=%2Faccount%3Fwelcome%3D1`,
       },
@@ -71,6 +81,15 @@ export default function SignupForm() {
         value={password}
         onChange={(e) => setPassword(e.target.value)}
       />
+      <div className="consent-group">
+        <Checkbox id="marketing">{MARKETING_WORDING}</Checkbox>
+        <Checkbox id="terms" required>
+          I agree to the{" "}
+          <Link href="/terms" target="_blank">terms of use</Link>{" "}
+          and have read the{" "}
+          <Link href="/privacy" target="_blank">privacy notice</Link>.
+        </Checkbox>
+      </div>
       {error && <Notice tone="error">{error}</Notice>}
       <SubmitButton
         state={state}

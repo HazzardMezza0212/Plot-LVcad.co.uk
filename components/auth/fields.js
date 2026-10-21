@@ -79,6 +79,16 @@ export function SubmitButton({ state, idle, loading, done, disabled }) {
   );
 }
 
+export function Checkbox({ id, children, ...props }) {
+  return (
+    <label className="check-field" htmlFor={id}>
+      <input id={id} name={id} type="checkbox" {...props} />
+      <span className="check-box" aria-hidden="true" />
+      <span className="check-label">{children}</span>
+    </label>
+  );
+}
+
 export function Notice({ tone = "info", children }) {
   return <div className={`auth-notice ${tone}`} role={tone === "error" ? "alert" : "status"}>{children}</div>;
 }

@@ -2,16 +2,20 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import LaunchButton from "@/components/LaunchButton";
 import Greeting from "@/components/account/Greeting";
-import FlameNotify from "@/components/account/FlameNotify";
-import { getUser } from "@/lib/supabase/server";
+import EmailPreferences from "@/components/account/EmailPreferences";
+import DataControls from "@/components/account/DataControls";
+import { createClient } from "@/lib/supabase/server";
+import { loadProfile } from "@/lib/account";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
 export const metadata = { title: "Your account | Plot-LV" };
 
 export default async function AccountPage({ searchParams }) {
   const params = await searchParams;
-  const user = isSupabaseConfigured ? await getUser() : null;
+  const supabase = await createClient();
+  const user = supabase ? (await supabase.auth.getUser()).data.user : null;
   if (isSupabaseConfigured && !user) redirect("/login?next=/account");
+  const profile = user ? await loadProfile(supabase, user) : null;
 
   const meta = user?.user_metadata || {};
   const fullName = meta.full_name || "";
@@ -113,6 +117,31 @@ export default async function AccountPage({ searchParams }) {
               </section>
             )}
 
+            {user && (
+              <section className="acct-card">
+                <h3 className="card-title mono">Email</h3>
+                {profile ? (
+                  <EmailPreferences
+                    initialOptIn={profile.marketing_opt_in}
+                    updatedAt={profile.marketing_updated_at}
+                  />
+                ) : (
+                  <p className="pp-desc">Email preferences are being set up. Check back shortly.</p>
+                )}
+              </section>
+            )}
+
+            {user && (
+              <section className="acct-card">
+                <h3 className="card-title mono">Your data</h3>
+                <p className="pp-desc">
+                  Download everything we hold about you, or delete your account.
+                  See the <Link href="/privacy" className="inline-a">privacy notice</Link>.
+                </p>
+                <DataControls />
+              </section>
+            )}
+
             <section className="acct-card muted-card">
               <div className="pp-head">
                 <span className="pp-code mono">PLOT-LV-FLAME</span>
@@ -122,8 +151,10 @@ export default async function AccountPage({ searchParams }) {
               <p className="pp-desc">
                 Fire alarm layout and compliance. Not on sale at the moment.
               </p>
-              {user ? (
-                <FlameNotify email={user.email} name={fullName} />
+              {user && profile?.marketing_opt_in ? (
+                <p className="notify-done mono">● You&apos;ll hear when Flame opens (product updates are on)</p>
+              ) : user ? (
+                <p className="pp-desc small-note">Turn on product updates above to hear when it opens.</p>
               ) : (
                 <Link href="/#updates" className="btn-secondary small">Get updates</Link>
               )}
