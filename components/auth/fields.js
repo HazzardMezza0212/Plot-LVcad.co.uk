@@ -1,5 +1,7 @@
 "use client";
 
+import { PRIVACY_EMAIL as SUPPORT_EMAIL } from "@/lib/legal";
+
 import { useState } from "react";
 
 export function TextField({ id, label, hint, ...props }) {
@@ -100,6 +102,9 @@ export function friendlyError(error) {
   if (msg.includes("email not confirmed")) return "Please confirm your email first. Check your inbox for the link we sent.";
   if (msg.includes("already registered") || msg.includes("already exists")) return "There's already an account with that email. Try logging in instead.";
   if (msg.includes("rate limit") || msg.includes("too many") || error?.status === 429) return "Too many attempts. Please wait a few minutes and try again.";
+  // Emails Supabase couldn't send (no email service set up for that address yet).
+  if (error?.code === "email_address_not_authorized" || msg.includes("not authorized") || msg.includes("error sending") || error?.code === "email_address_invalid")
+    return `We couldn't send that email just now. Email ${SUPPORT_EMAIL} from this address and we'll sort it out for you.`;
   if (msg.includes("password") && (msg.includes("least") || msg.includes("weak") || msg.includes("short"))) return "That password is too weak. Use at least 8 characters with a mix of letters and numbers.";
   if (msg.includes("same password") || msg.includes("different from the old")) return "Your new password must be different from your current one.";
   if (msg.includes("fetch") || msg.includes("network")) return "Couldn't reach the server. Check your connection and try again.";
