@@ -9,7 +9,22 @@
 // tool at /cctv is a separate static build with its own copy of this setup.
 import posthog from "posthog-js";
 
-if (process.env.NODE_ENV === "production") {
+// "Ignore my visits": open any page with ?me=1 once on a device and analytics
+// stays off there (?me=0 turns it back on). Stored as a flag in that browser's
+// local storage; the FOV tool at /cctv reads the same flag.
+const IGNORE_FLAG = "plv_ignore_me";
+function isIgnoredDevice() {
+  try {
+    const me = new URLSearchParams(window.location.search).get("me");
+    if (me === "1") localStorage.setItem(IGNORE_FLAG, "1");
+    if (me === "0") localStorage.removeItem(IGNORE_FLAG);
+    return localStorage.getItem(IGNORE_FLAG) === "1";
+  } catch {
+    return false;
+  }
+}
+
+if (process.env.NODE_ENV === "production" && !isIgnoredDevice()) {
   try {
     posthog.init("phc_CMT42C68PBN3mGzXp7tw9RaZ9LuAwqWUwKqZNRwRcz7g", {
       api_host: "https://eu.i.posthog.com",

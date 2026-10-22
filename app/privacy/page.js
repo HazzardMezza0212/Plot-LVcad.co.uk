@@ -152,7 +152,8 @@ export default function PrivacyPage() {
           remembers if you chose to continue as a guest. They are strictly
           necessary for the service, so they don&apos;t need your consent. We don&apos;t use
           advertising or tracking cookies, and our usage statistics don&apos;t
-          use cookies or local storage. FOV stores some settings in your browser&apos;s local
+          use cookies or local storage. (The one exception is a
+          flag the site owner sets on his own devices so his visits aren&apos;t counted.) FOV stores some settings in your browser&apos;s local
           storage, which never leaves your device.
         </p>
 
