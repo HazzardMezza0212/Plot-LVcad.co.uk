@@ -5,6 +5,7 @@ import Link from "next/link";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
 import LaunchButton from "@/components/LaunchButton";
+import ProEarlyAccess from "@/components/ProEarlyAccess";
 
 // Flame is not on sale. Pricing and checkout were removed from this page
 // (see git history before this commit to restore them); app/api/checkout
@@ -13,6 +14,7 @@ import LaunchButton from "@/components/LaunchButton";
 const NAV_LINKS = [
   ["Products", "#products"],
   ["FOV", "#fov"],
+  ["Pro", "#pro"],
   ["Flame", "/flame"],
   ["Contact", "#contact"],
 ];
@@ -222,6 +224,7 @@ export default function Home() {
               </Link>
             </div>
             <GuestOption compact />
+            <a href="#pro" className="pro-link">FOV Pro is coming: join early access →</a>
             <p className="pp-note mono">
               Preview: camera data is marked unverified while it is checked
               against manufacturer datasheets.
@@ -267,6 +270,8 @@ export default function Home() {
           </span>
         </div>
       </section>
+
+      <ProEarlyAccess />
 
       <section className="getstarted" id="start">
         <div className="range-head">

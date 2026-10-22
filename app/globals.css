@@ -937,3 +937,34 @@ footer{background:var(--bg);}
 .auth-or::before, .auth-or::after{content:""; flex:1; height:1px; background:var(--line-soft);}
 .auth-guest-btn{width:100%; padding:14px; font-size:.85rem; cursor:pointer;}
 .auth-guest .guest-terms{margin-top:10px;}
+
+/* ---------- FOV Pro early access ---------- */
+.pro-link{display:inline-block; margin-top:14px; color:var(--red-ink); font-weight:600; font-size:.9rem; text-decoration:none;}
+.pro-link:hover{text-decoration:underline;}
+.pro-access{background:var(--bg-alt); border-top:1px solid var(--line-soft); border-bottom:1px solid var(--line-soft);}
+.pro-inner{max-width:1040px; margin:0 auto; display:grid; grid-template-columns:1fr minmax(0,420px); gap:56px; align-items:start;}
+.pro-copy{min-width:0;}
+.pro-copy .ptag{color:var(--red-ink); font-size:.72rem; letter-spacing:.08em; text-transform:uppercase; margin-bottom:14px;}
+.pro-copy h2{font-size:2.1rem; margin-bottom:14px; text-wrap:balance;}
+.pro-copy p{color:var(--muted); line-height:1.6; max-width:52ch;}
+.pro-list{list-style:none; padding:0; margin:20px 0; display:grid; gap:10px;}
+.pro-list li{padding-left:22px; position:relative; line-height:1.5;}
+.pro-list li::before{content:""; position:absolute; left:0; top:.55em; width:10px; height:2px; background:var(--red);}
+.pro-note{font-weight:600; color:var(--ink) !important;}
+.pro-form{display:flex; flex-direction:column; gap:6px; background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:24px; box-shadow:var(--shadow); min-width:0;}
+.pro-form label{font-size:.82rem; font-weight:600; margin-top:8px;}
+.pro-form label .opt{font-weight:400; color:var(--muted);}
+.pro-form input:not([type=checkbox]), .pro-form select, .pro-form textarea{
+  width:100%; box-sizing:border-box; font:inherit; font-size:.92rem; color:var(--ink); background:var(--bg);
+  border:1px solid var(--line); border-radius:6px; padding:10px 12px;
+}
+.pro-form textarea{resize:vertical;}
+.pro-form input:focus, .pro-form select:focus, .pro-form textarea:focus{outline:2px solid var(--red-tint); border-color:var(--red);}
+.pro-form .pro-check{display:flex; align-items:center; gap:8px; font-weight:400; margin-top:12px;}
+.pro-form .btn-primary{margin-top:14px; width:100%; justify-content:center;}
+.pro-form .btn-primary:disabled{opacity:.6; cursor:default;}
+.pro-done{background:var(--bg); border:1px solid var(--line); border-radius:10px; padding:28px; box-shadow:var(--shadow);}
+.pro-done-tag{color:var(--green); font-size:.75rem; letter-spacing:.08em; margin-bottom:10px;}
+.pro-done h3{font-size:1.3rem; margin-bottom:8px;}
+.pro-done p{color:var(--muted); line-height:1.6;}
+@media (max-width:900px){ .pro-inner{grid-template-columns:1fr; gap:32px;} }

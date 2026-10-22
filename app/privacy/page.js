@@ -65,6 +65,10 @@ export default function PrivacyPage() {
               <td>Your email address and name on our mailing list.</td>
             </tr>
             <tr>
+              <td>You join FOV Pro early access</td>
+              <td>Your email address, and if you give them, your name, your role and what you&apos;d want from Pro. Used only to contact you about Pro early access, unless you also tick the box for product updates.</td>
+            </tr>
+            <tr>
               <td>You send us a message</td>
               <td>Your email address and your message.</td>
             </tr>
@@ -90,6 +94,7 @@ export default function PrivacyPage() {
             <tr><td>Creating and running your account, letting you sign in and use FOV</td><td>Contract: we need it to provide the service you asked for.</td></tr>
             <tr><td>Account and security emails, such as email confirmation, password resets and important changes to the service or these terms</td><td>Contract, and our legitimate interest in keeping accounts secure.</td></tr>
             <tr><td>Product updates and launch news by email</td><td>Your consent. We only send these if you ticked the box or asked to hear about Flame. You can withdraw consent at any time.</td></tr>
+            <tr><td>Contacting you about FOV Pro early access, which you asked to join</td><td>Legitimate interests: you asked to hear about it. Ask us and we&apos;ll remove you.</td></tr>
             <tr><td>Replying to messages you send us</td><td>Legitimate interests: answering your enquiry.</td></tr>
             <tr><td>Keeping the service secure, preventing abuse and keeping records of consent</td><td>Legitimate interests, and our legal obligations.</td></tr>
             <tr><td>Anonymous usage statistics and session recordings to improve the website and FOV</td><td>Legitimate interests. No personal profile is built.</td></tr>
