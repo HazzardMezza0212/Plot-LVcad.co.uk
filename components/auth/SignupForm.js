@@ -53,6 +53,16 @@ export default function SignupForm() {
       return;
     }
 
+    // Supabase answers a sign-up for an email that already has an account
+    // with a user that has no identities, and sends no email (so it doesn't
+    // reveal which addresses are registered). Say so, instead of showing
+    // "check your inbox" for an email that will never arrive.
+    if (data.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+      setError("There's already an account for this email. Log in, or use “Forgot password” to reset it.");
+      setState("idle");
+      return;
+    }
+
     track("signup_completed", { marketing_opt_in: form.get("marketing") === "on" }, { beforeLeaving: Boolean(data.session) });
 
     if (data.session) {
