@@ -23,7 +23,7 @@ const BENEFITS = [
   "A coverage report to hand to your client, and pixel density and DORI per camera",
   "£99 + VAT a year, locked for as long as you stay subscribed",
   "A direct line to me, and a real say in what gets built next",
-  "14-day money-back guarantee, and cancel any time from your account",
+  "Cancel any time from your account, and you won't be charged again",
 ];
 
 export default async function FoundingPage({ searchParams }) {

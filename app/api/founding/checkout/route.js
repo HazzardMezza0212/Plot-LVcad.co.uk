@@ -79,7 +79,7 @@ export async function POST(request) {
       expires_at: Math.floor(Date.now() / 1000) + 31 * 60,
       custom_text: {
         submit: {
-          message: `Your seat is held for 30 minutes. By subscribing you agree to the Founding 20 terms at ${base}/terms#founding. Cancel any time from your account.`,
+          message: `Your seat is held for 30 minutes. By subscribing you agree to the Founding 20 terms at ${base}/terms#founding, ask for Pro to start straight away, and understand payments are non-refundable. Cancel renewal any time from your account.`,
         },
       },
       success_url: `${base}/founding/welcome?session_id={CHECKOUT_SESSION_ID}`,
