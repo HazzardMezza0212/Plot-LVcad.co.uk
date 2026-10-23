@@ -44,7 +44,13 @@ export async function POST(request) {
   if (ent?.pro !== true) return json({ error: "Custom cameras are a Pro feature." }, 403);
 
   const { data, error: dbError } = await supabase.from("custom_cameras").insert({ spec }).select("id").single();
-  if (dbError) return json({ error: "Could not save the camera. You can store up to 200 custom cameras." }, 400);
+  if (dbError) {
+    // P0200: the 200-camera limit trigger. 42501: row-level security refused it (not Pro).
+    if (dbError.code === "P0200") return json({ error: "You can store up to 200 custom cameras. Delete one to add another." }, 400);
+    if (dbError.code === "42501") return json({ error: "Custom cameras are a Pro feature." }, 403);
+    console.error("custom_cameras insert failed:", dbError.code, dbError.message);
+    return json({ error: "Could not save the camera. Please try again." }, 500);
+  }
   return json({ id: data.id }, 201);
 }
 
