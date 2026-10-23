@@ -9,6 +9,12 @@ export default function sitemap() {
       priority: 1,
     },
     {
+      url: `${siteUrl}/cctv-field-of-view-calculator`,
+      lastModified: new Date(),
+      changeFrequency: "weekly",
+      priority: 0.95,
+    },
+    {
       url: `${siteUrl}/flame`,
       lastModified: new Date(),
       changeFrequency: "weekly",

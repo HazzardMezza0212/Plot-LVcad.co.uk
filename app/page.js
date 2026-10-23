@@ -13,7 +13,7 @@ import ProEarlyAccess from "@/components/ProEarlyAccess";
 
 const NAV_LINKS = [
   ["Products", "#products"],
-  ["FOV", "#fov"],
+  ["FOV", "/cctv-field-of-view-calculator"],
   ["Pro", "#pro"],
   ["Flame", "/flame"],
   ["Contact", "#contact"],
@@ -224,6 +224,7 @@ export default function Home() {
               </Link>
             </div>
             <GuestOption compact />
+            <Link href="/cctv-field-of-view-calculator" className="pro-link">How FOV works: field of view, pixel density and DORI →</Link>
             <a href="#pro" className="pro-link">FOV Pro is coming: join early access →</a>
             <p className="pp-note mono">
               Preview: camera data is marked unverified while it is checked
