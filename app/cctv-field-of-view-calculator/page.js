@@ -30,6 +30,7 @@ export const metadata = {
 const NAV_LINKS = [
   ["How it works", "#how"],
   ["PPM & DORI", "#dori"],
+  ["Camera library", "/cctv-cameras"],
   ["Pro", "#pro"],
   ["FAQ", "#faq"],
   ["All products", "/#products"],
@@ -202,9 +203,9 @@ export default function FovLandingPage() {
             <div className="ptag mono">Pixel density &amp; DORI, in plain English</div>
             <h2 className="display">How much detail will this camera actually give me?</h2>
             <p>
-              A camera&apos;s <strong>field of view</strong> is how wide it sees.
+              A camera&apos;s <strong>field of view</strong>{" "}is how wide it sees.
               The further from the camera, the wider the scene, so its pixels are
-              spread more thinly. <strong>Pixel density</strong> measures that: the
+              spread more thinly. <strong>Pixel density</strong>{" "}measures that: the
               number of horizontal pixels covering one metre of the scene (px/m).
             </p>
             <p>
@@ -218,6 +219,11 @@ export default function FovLandingPage() {
               EN&nbsp;62676-4, the European standard for CCTV application. Pick the
               level you need in FOV and it shows where each camera meets it, so
               you can see where a camera stops being useful for the job.
+            </p>
+            <p>
+              <Link href="/guides/how-to-calculate-cctv-field-of-view" className="pro-link">The full guide: how to calculate field of view and pixel density →</Link>
+              <br />
+              <Link href="/cctv-cameras" className="pro-link">Field of view and DORI distances for each camera model →</Link>
             </p>
           </div>
           <table className="fovl-dori">
