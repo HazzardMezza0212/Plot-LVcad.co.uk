@@ -1,3 +1,16 @@
 {
-  "framework": "nextjs"
+  "framework": "nextjs",
+  "redirects": [
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "plot-l-vcad-co-uk.vercel.app"
+        }
+      ],
+      "destination": "https://www.plotlvcad.co.uk/:path*",
+      "permanent": true
+    }
+  ]
 }
