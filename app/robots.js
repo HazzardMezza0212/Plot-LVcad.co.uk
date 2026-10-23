@@ -5,7 +5,9 @@ export default function robots() {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/api/", "/auth/", "/account", "/cctv"],
+      // "/cctv" alone would also block /cctv-field-of-view-calculator and
+      // /cctv-cameras (robots rules match by prefix), so block only the tool.
+      disallow: ["/api/", "/auth/", "/account", "/cctv$", "/cctv/"],
     },
     sitemap: `${siteUrl}/sitemap.xml`,
   };
