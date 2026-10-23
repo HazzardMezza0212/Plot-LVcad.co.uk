@@ -28,6 +28,7 @@ export default function TermsPage() {
           <h2>The short version</h2>
           <ul>
             <li>FOV is a free preview of a design aid. It doesn&apos;t replace professional judgement.</li>
+            <li>Founding 20 members pay £99 + VAT a year for FOV Pro, can cancel any time, and have a 14-day money-back guarantee (see section 3A).</li>
             <li>Its results are estimates, and its camera data hasn&apos;t been verified yet. Check anything important yourself.</li>
             <li>The service is provided as it is, and may change or stop during the preview.</li>
             <li>Your plans and projects stay on your device and remain yours.</li>
@@ -60,6 +61,27 @@ export default function TermsPage() {
           always be available, uninterrupted or error-free. If we start
           charging, we&apos;ll tell you first. Nothing will be charged without
           your agreement.
+        </p>
+
+        <h2 id="founding">3A. Founding 20 membership (paid)</h2>
+        <p>
+          Founding 20 is a paid FOV Pro membership limited to 20 people. If
+          you take a Founding seat:
+        </p>
+        <ul>
+          <li><strong>Price.</strong> £99 a year plus VAT (£118.80 including VAT at 20%), charged yearly in advance by card through Stripe. We send a VAT invoice for each payment.</li>
+          <li><strong>Price lock.</strong> Your price will not go up for as long as your membership continues without a break. If you cancel and rejoin later, the price at that time applies.</li>
+          <li><strong>What you get.</strong> FOV Pro is in early access. You get each Pro feature on your account as it is released, starting with DXF (CAD) drawing import. The free features stay available. We can&apos;t promise release dates, and features may change as we build them with members&apos; feedback.</li>
+          <li><strong>Renewal.</strong> Your membership renews automatically each year. We&apos;ll email you before each renewal.</li>
+          <li><strong>Cancelling.</strong> You can cancel at any time from your account page (“Manage billing &amp; invoices”). Pro then stays on until the end of the year you&apos;ve paid for, and you won&apos;t be charged again.</li>
+          <li><strong>14-day money-back guarantee.</strong> If you ask within 14 days of your first payment, or of any renewal, we&apos;ll refund that payment in full and end your membership. This applies whether you buy as a business or as a consumer.</li>
+          <li><strong>If we stop.</strong> If we stop offering FOV Pro, we&apos;ll give you at least 30 days&apos; notice and refund the unused part of your current year.</li>
+          <li><strong>Accounts.</strong> Your seat belongs to your Plot-LV account and can&apos;t be transferred. Deleting your account cancels your membership.</li>
+        </ul>
+        <p>
+          For paid members, the limit on our liability in section 8 is the
+          amount you paid us in the 12 months before the claim (or £100 if
+          that is more).
         </p>
 
         <h2>4. Using FOV&apos;s results</h2>

@@ -7,13 +7,18 @@ export async function GET() {
   const { data: { user } = {} } = supabase ? await supabase.auth.getUser() : {};
   if (!user) return Response.json({ error: "Please log in again." }, { status: 401 });
 
-  const [{ data: profile }, { data: consentHistory }] = await Promise.all([
+  const [{ data: profile }, { data: consentHistory }, { data: founding }] = await Promise.all([
     supabase.from("profiles").select("*").eq("user_id", user.id).maybeSingle(),
     supabase
       .from("marketing_consent_events")
       .select("granted, source, wording, created_at")
       .eq("user_id", user.id)
       .order("created_at", { ascending: true }),
+    supabase
+      .from("founding_members")
+      .select("status, seat_no, livemode, paid_at, cancelled_at, created_at")
+      .eq("user_id", user.id)
+      .in("status", ["active", "cancelled"]),
   ]);
 
   const meta = user.user_metadata || {};
@@ -39,6 +44,8 @@ export async function GET() {
         }
       : null,
     consent_history: consentHistory || [],
+    // Payment details (card, address, invoices) are held by Stripe, not by us.
+    founding_membership: founding || [],
   };
 
   return new Response(JSON.stringify(exportData, null, 2), {

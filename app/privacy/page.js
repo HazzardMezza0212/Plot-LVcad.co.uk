@@ -95,6 +95,7 @@ export default function PrivacyPage() {
             <tr><td>Account and security emails, such as email confirmation, password resets and important changes to the service or these terms</td><td>Contract, and our legitimate interest in keeping accounts secure.</td></tr>
             <tr><td>Product updates and launch news by email</td><td>Your consent. We only send these if you ticked the box or asked to hear about Flame. You can withdraw consent at any time.</td></tr>
             <tr><td>Contacting you about FOV Pro early access, which you asked to join</td><td>Legitimate interests: you asked to hear about it. Ask us and we&apos;ll remove you.</td></tr>
+            <tr><td>Taking Founding 20 payments, issuing VAT invoices and managing your membership</td><td>Contract, and our legal obligation to keep tax records.</td></tr>
             <tr><td>Replying to messages you send us</td><td>Legitimate interests: answering your enquiry.</td></tr>
             <tr><td>Keeping the service secure, preventing abuse and keeping records of consent</td><td>Legitimate interests, and our legal obligations.</td></tr>
             <tr><td>Anonymous usage statistics and session recordings to improve the website and FOV</td><td>Legitimate interests. No personal profile is built.</td></tr>
@@ -108,6 +109,7 @@ export default function PrivacyPage() {
           <li><strong>Vercel</strong>: website hosting and anonymous page-view statistics (United States).</li>
           <li><strong>PostHog</strong>: anonymous usage analytics and session recordings, without cookies. Data is stored in the European Union (Germany).</li>
           <li><strong>Resend</strong>: sending emails and holding our mailing list (United States).</li>
+          <li><strong>Stripe</strong>: taking Founding 20 payments, holding card and billing details, and issuing VAT invoices (Ireland and the United States). We never see or store your full card number.</li>
         </ul>
         <p>
           Where a provider processes data outside the UK, the transfer is
@@ -121,6 +123,7 @@ export default function PrivacyPage() {
         <ul>
           <li><strong>Account data and consent records</strong>: for as long as your account exists. When you delete your account, they are deleted immediately from our live systems; provider backups are overwritten on their normal schedule.</li>
           <li><strong>Mailing list</strong>: until you unsubscribe. After that we keep only your email address marked as unsubscribed, so we never email you again by mistake. If you delete your account, we remove you from the list entirely.</li>
+          <li><strong>Payment and invoice records</strong>: six years after the end of the tax year they relate to, as UK tax law requires. Stripe holds these; we keep only your membership status.</li>
           <li><strong>Messages you send us</strong>: up to two years, then deleted.</li>
           <li><strong>Technical logs</strong>: kept by our hosting providers for a short period, usually days to weeks.</li>
         </ul>

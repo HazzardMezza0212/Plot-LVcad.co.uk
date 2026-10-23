@@ -4,10 +4,14 @@ import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
 import LaunchButton from "@/components/LaunchButton";
 import ProEarlyAccess from "@/components/ProEarlyAccess";
+import FoundingBanner from "@/components/founding/FoundingBanner";
 
 // FOV landing page: the page we want Google to rank for CCTV field of view /
 // pixel density / DORI searches. The tool itself stays at /cctv (blocked in
 // robots.txt). Keep every claim here true for the live free version.
+
+// Re-render at most every 5 minutes so the Founding seats count stays fresh.
+export const revalidate = 300;
 
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
 const PATH = "/cctv-field-of-view-calculator";
@@ -154,6 +158,8 @@ export default function FovLandingPage() {
           <figcaption className="mono">The example office that opens with the planner. Drag a camera and the coverage updates.</figcaption>
         </figure>
       </section>
+
+      <FoundingBanner />
 
       <section className="fovl-features">
         <div className="range-head">

@@ -7,6 +7,8 @@ import DataControls from "@/components/account/DataControls";
 import { createClient } from "@/lib/supabase/server";
 import { loadProfile } from "@/lib/account";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { ManageBillingButton } from "@/components/founding/FoundingButtons";
+import { FOUNDING_SEATS, isFoundingOpen, mySeat } from "@/lib/founding";
 
 export const metadata = { title: "Your account | Plot-LV" };
 
@@ -15,7 +17,10 @@ export default async function AccountPage({ searchParams }) {
   const supabase = await createClient();
   const user = supabase ? (await supabase.auth.getUser()).data.user : null;
   if (isSupabaseConfigured && !user) redirect("/login?next=/account");
-  const profile = user ? await loadProfile(supabase, user) : null;
+  const [profile, seat] = user
+    ? await Promise.all([loadProfile(supabase, user), mySeat(supabase, user.id)])
+    : [null, null];
+  const isFounder = seat?.status === "active";
 
   const meta = user?.user_metadata || {};
   const fullName = meta.full_name || "";
@@ -111,9 +116,36 @@ export default async function AccountPage({ searchParams }) {
                   <div><dt>Email</dt><dd>{user.email}</dd></div>
                   {meta.company && <div><dt>Company</dt><dd>{meta.company}</dd></div>}
                   {memberSince && <div><dt>Member since</dt><dd>{memberSince}</dd></div>}
-                  <div><dt>Plan</dt><dd>FOV preview (free)</dd></div>
+                  <div><dt>Plan</dt><dd>{isFounder ? `FOV Pro · Founding member (seat ${seat.seat_no} of ${FOUNDING_SEATS})` : "FOV preview (free)"}</dd></div>
                 </dl>
                 <Link href="/account/password" className="auth-link">Change password →</Link>
+              </section>
+            )}
+
+            {user && (isFounder || seat?.status === "cancelled" || isFoundingOpen) && (
+              <section className="acct-card founding-acct">
+                <h3 className="card-title mono">Founding 20</h3>
+                {isFounder ? (
+                  <>
+                    <p className="pp-desc">
+                      You&apos;re Founding member {seat.seat_no} of {FOUNDING_SEATS}. Pro features appear in FOV as they ship,
+                      and your £99 + VAT a year is locked while you stay subscribed.
+                    </p>
+                    <ManageBillingButton />
+                  </>
+                ) : seat?.status === "cancelled" ? (
+                  <>
+                    <p className="pp-desc">Your Founding membership has ended. Invoices from your time as a member are still available.</p>
+                    <ManageBillingButton />
+                  </>
+                ) : (
+                  <>
+                    <p className="pp-desc">
+                      Twenty seats for FOV Pro at £99 + VAT a year, locked for as long as you stay subscribed.
+                    </p>
+                    <Link href="/founding" className="btn-primary small">See the Founding offer →</Link>
+                  </>
+                )}
               </section>
             )}
 

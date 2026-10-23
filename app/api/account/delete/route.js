@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { isSameOrigin } from "@/lib/requestGuard";
 import { removeContact } from "@/lib/mailingList";
+import { getStripe } from "@/lib/founding";
 
 // Permanently delete the signed-in user's account (right to erasure).
 // Removes them from the mailing list first, then deletes the account; the
@@ -16,6 +17,28 @@ export async function POST(request) {
   const body = await request.json().catch(() => ({}));
   if (body?.confirm !== "DELETE") {
     return Response.json({ error: "Type DELETE to confirm." }, { status: 400 });
+  }
+
+  // A paying Founding member must not keep being billed after deleting their
+  // account: cancel their subscription first, and stop if that fails.
+  const { data: paidSeats } = await supabase
+    .from("founding_members")
+    .select("stripe_subscription_id")
+    .eq("user_id", user.id)
+    .eq("status", "active")
+    .not("stripe_subscription_id", "is", null);
+  if (paidSeats?.length) {
+    const stripe = getStripe();
+    try {
+      if (!stripe) throw new Error("Stripe not configured");
+      for (const seat of paidSeats) await stripe.subscriptions.cancel(seat.stripe_subscription_id);
+    } catch (err) {
+      console.error("[account] cancel subscription before delete failed", err?.message);
+      return Response.json(
+        { error: "Couldn't cancel your Founding membership, so nothing was deleted. Please try again or contact us." },
+        { status: 502 }
+      );
+    }
   }
 
   const removed = await removeContact(user.email);
