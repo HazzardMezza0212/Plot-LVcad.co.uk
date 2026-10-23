@@ -4,7 +4,7 @@ import SiteFooter from "@/components/SiteFooter";
 import ProEarlyAccess from "@/components/ProEarlyAccess";
 import { FoundingCheckoutButton, ManageBillingButton } from "@/components/founding/FoundingButtons";
 import { createClient } from "@/lib/supabase/server";
-import { FOUNDING_PRICE_LABEL, FOUNDING_SEATS, isFoundingOpen, mySeat, seatsLeft } from "@/lib/founding";
+import { FOUNDING_PRICE_LABEL, FOUNDING_SEATS, isFoundingOpen, missingFoundingSettings, mySeat, seatsLeft } from "@/lib/founding";
 
 export const metadata = {
   title: "FOV Founding 20 | Plot-LV",
@@ -86,6 +86,11 @@ export default async function FoundingPage({ searchParams }) {
             ) : !isFoundingOpen ? (
               <div className="founding-state">
                 <p>Founding seats open very soon. Join the list below and I&apos;ll email you first.</p>
+                {missingFoundingSettings().length > 0 && (
+                  <p className="error-msg mono">
+                    Preview check: missing {missingFoundingSettings().join(", ")}. Add for Preview, then redeploy.
+                  </p>
+                )}
                 <a href="#pro" className="btn-primary">Join the early access list</a>
               </div>
             ) : full ? (
