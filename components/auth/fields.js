@@ -107,6 +107,8 @@ export function friendlyError(error) {
     return `We couldn't send that email just now. Email ${SUPPORT_EMAIL} from this address and we'll sort it out for you.`;
   if (msg.includes("password") && (msg.includes("least") || msg.includes("weak") || msg.includes("short"))) return "That password is too weak. Use at least 8 characters with a mix of letters and numbers.";
   if (msg.includes("same password") || msg.includes("different from the old")) return "Your new password must be different from your current one.";
+  if (msg.includes("captcha")) return "Please complete the check and try again.";
   if (msg.includes("fetch") || msg.includes("network")) return "Couldn't reach the server. Check your connection and try again.";
-  return error?.message || "Something went wrong. Please try again.";
+  // Never show raw server wording to visitors; it can reveal how the backend works.
+  return "Something went wrong. Please try again.";
 }

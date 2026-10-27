@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { isSameOrigin } from "@/lib/requestGuard";
 import { cleanCameraSpec } from "@/lib/customCamera";
+import { rateLimit } from "@/lib/rateLimit";
 
 // A Pro user's custom cameras for the FOV tool at /cctv, kept per account in
 // public.custom_cameras. Row-level security does the real enforcement (own rows only; adding
@@ -32,6 +33,7 @@ export async function GET() {
 
 export async function POST(request) {
   if (!isSameOrigin(request)) return json({ error: "Please use the tool on plotlvcad.co.uk." }, 403);
+  if (rateLimit(request, "cameras-write", { limit: 60, windowMs: 60 * 60 * 1000 })) return json({ error: "Too many changes. Please try again later." }, 429);
   const { supabase, user } = await session();
   if (!user) return json({ error: "Please log in." }, 401);
 

@@ -1,14 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { getBrowserClient } from "@/lib/supabase/client";
 import { friendlyError } from "./fields";
+import Turnstile, { TURNSTILE_SITE_KEY } from "@/components/Turnstile";
 
 // "Check your inbox" state shown after sign-up (when Supabase requires email
 // confirmation) and after a password-reset request.
 export default function CheckEmail({ email, kind, onBack }) {
   const [cooldown, setCooldown] = useState(30);
   const [message, setMessage] = useState("");
+  const [captchaToken, setCaptchaToken] = useState("");
+  const captcha = useRef(null);
 
   useEffect(() => {
     if (cooldown <= 0) return;
@@ -19,17 +22,23 @@ export default function CheckEmail({ email, kind, onBack }) {
   async function resend() {
     const supabase = getBrowserClient();
     setMessage("");
+    if (TURNSTILE_SITE_KEY && !captchaToken) {
+      setMessage("Please complete the check first.");
+      return;
+    }
     const origin = window.location.origin;
     const { error } =
       kind === "signup"
         ? await supabase.auth.resend({
             type: "signup",
             email,
-            options: { emailRedirectTo: `${origin}/auth/confirm?next=%2Faccount%3Fwelcome%3D1` },
+            options: { captchaToken: captchaToken || undefined, emailRedirectTo: `${origin}/auth/confirm?next=%2Faccount%3Fwelcome%3D1` },
           })
         : await supabase.auth.resetPasswordForEmail(email, {
             redirectTo: `${origin}/auth/confirm?next=/account/password`,
+            captchaToken: captchaToken || undefined,
           });
+    captcha.current?.reset();
     setMessage(error ? friendlyError(error) : "Sent again. It can take a minute to arrive.");
     setCooldown(30);
   }
@@ -53,6 +62,7 @@ export default function CheckEmail({ email, kind, onBack }) {
           ? "Open it in this browser to finish setting up your account."
           : "Open it in this browser to choose a new password."}
       </p>
+      <Turnstile ref={captcha} onToken={setCaptchaToken} />
       <div className="check-actions">
         <button type="button" className="btn-secondary" onClick={resend} disabled={cooldown > 0}>
           {cooldown > 0 ? `Resend in ${cooldown}s` : "Resend email"}

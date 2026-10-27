@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { getBrowserClient } from "@/lib/supabase/client";
 import { TextField, PasswordField, SubmitButton, Notice, friendlyError } from "./fields";
 import { track } from "@/lib/analytics";
+import Turnstile, { TURNSTILE_SITE_KEY } from "@/components/Turnstile";
 
 export default function LoginForm({ next }) {
   const [state, setState] = useState("idle");
@@ -12,6 +13,8 @@ export default function LoginForm({ next }) {
   const [password, setPassword] = useState("");
   const [unconfirmed, setUnconfirmed] = useState("");
   const [resent, setResent] = useState(false);
+  const [captchaToken, setCaptchaToken] = useState("");
+  const captcha = useRef(null);
 
   async function onSubmit(e) {
     e.preventDefault();
@@ -19,10 +22,15 @@ export default function LoginForm({ next }) {
     const email = String(new FormData(e.target).get("email")).trim();
     setError("");
     setUnconfirmed("");
+    if (TURNSTILE_SITE_KEY && !captchaToken) {
+      setError("Please complete the check below first.");
+      return;
+    }
     setState("loading");
 
-    const { error: err } = await supabase.auth.signInWithPassword({ email, password });
+    const { error: err } = await supabase.auth.signInWithPassword({ email, password, options: { captchaToken: captchaToken || undefined } });
     if (err) {
+      captcha.current?.reset();
       setError(friendlyError(err));
       if ((err.message || "").toLowerCase().includes("not confirmed")) setUnconfirmed(email);
       setState("idle");
@@ -39,7 +47,7 @@ export default function LoginForm({ next }) {
     await supabase.auth.resend({
       type: "signup",
       email: unconfirmed,
-      options: { emailRedirectTo: `${window.location.origin}/auth/confirm?next=%2Faccount%3Fwelcome%3D1` },
+      options: { captchaToken: captchaToken || undefined, emailRedirectTo: `${window.location.origin}/auth/confirm?next=%2Faccount%3Fwelcome%3D1` },
     });
     setResent(true);
   }
@@ -72,6 +80,7 @@ export default function LoginForm({ next }) {
           {resent && " A new link is on its way."}
         </Notice>
       )}
+      <Turnstile ref={captcha} onToken={setCaptchaToken} />
       <SubmitButton state={state} idle="Log in" loading="Checking…" done="Signed in" />
       <p className="auth-alt">
         New to Plot-LV? <Link href="/signup">Create a free account</Link>

@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import Link from "next/link";
 import SiteNav from "@/components/SiteNav";
 import SiteFooter from "@/components/SiteFooter";
 import LaunchButton from "@/components/LaunchButton";
 import ProEarlyAccess from "@/components/ProEarlyAccess";
+import Turnstile, { TURNSTILE_SITE_KEY } from "@/components/Turnstile";
 
 // Flame is not on sale. Pricing and checkout were removed from this page
 // (see git history before this commit to restore them); app/api/checkout
@@ -63,6 +64,11 @@ function makeBurst() {
 
 export default function Home() {
   const [contactSent, setContactSent] = useState(false);
+  const [contactError, setContactError] = useState("");
+  const [contactToken, setContactToken] = useState("");
+  const [interestToken, setInterestToken] = useState("");
+  const contactCaptcha = useRef(null);
+  const interestCaptcha = useRef(null);
   const [interestSubmitting, setInterestSubmitting] = useState(false);
   const [interestSent, setInterestSent] = useState(false);
   const [interestError, setInterestError] = useState("");
@@ -81,23 +87,42 @@ export default function Home() {
 
   async function handleContactSubmit(e) {
     e.preventDefault();
+    setContactError("");
+    if (TURNSTILE_SITE_KEY && !contactToken) {
+      setContactError("Please complete the check below first.");
+      return;
+    }
     const formData = new FormData(e.target);
-    await fetch("/api/contact", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        email: formData.get("email"),
-        message: formData.get("message"),
-        company: formData.get("extra_info"),
-      }),
-    });
-    setContactSent(true);
+    try {
+      const res = await fetch("/api/contact", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: formData.get("email"),
+          message: formData.get("message"),
+          company: formData.get("extra_info"),
+          turnstileToken: contactToken,
+        }),
+      });
+      const data = await res.json().catch(() => ({}));
+      if (!res.ok) throw new Error(data.error || "Something went wrong. Please try again.");
+      setContactSent(true);
+    } catch (err) {
+      setContactError(err.message);
+      contactCaptcha.current?.reset();
+    }
   }
 
   async function handleInterestSubmit(e) {
     e.preventDefault();
     setInterestSubmitting(true);
     setInterestError("");
+
+    if (TURNSTILE_SITE_KEY && !interestToken) {
+      setInterestError("Please complete the check below first.");
+      setInterestSubmitting(false);
+      return;
+    }
 
     const formData = new FormData(e.target);
     try {
@@ -107,14 +132,16 @@ export default function Home() {
         body: JSON.stringify({
           email: formData.get("email"),
           company: formData.get("extra_info"),
+          turnstileToken: interestToken,
         }),
       });
-      const data = await res.json();
+      const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || "Something went wrong.");
       setBurst(makeBurst());
       setInterestSent(true);
     } catch (err) {
       setInterestError(err.message);
+      interestCaptcha.current?.reset();
     } finally {
       setInterestSubmitting(false);
     }
@@ -332,6 +359,7 @@ export default function Home() {
               required
               disabled={interestSent}
             />
+            {!interestSent && <Turnstile ref={interestCaptcha} onToken={setInterestToken} />}
             <button
               className="submit-btn"
               type="submit"
@@ -397,9 +425,11 @@ export default function Home() {
             </div>
             <div className="field">
               <label htmlFor="contact-message">Message</label>
-              <textarea id="contact-message" name="message" required></textarea>
+              <textarea id="contact-message" name="message" required maxLength={5000}></textarea>
             </div>
-            <button className="submit-btn" type="submit" disabled={!ready}>
+            {!contactSent && <Turnstile ref={contactCaptcha} onToken={setContactToken} />}
+            {contactError && <p className="error-msg" role="alert">{contactError}</p>}
+            <button className="submit-btn" type="submit" disabled={!ready || contactSent}>
               {contactSent ? "Message sent ✓" : "Send message"}
             </button>
             <p className="form-privacy">
