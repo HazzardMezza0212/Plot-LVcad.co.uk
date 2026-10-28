@@ -59,6 +59,23 @@ export async function POST(request) {
     .limit(1)
     .maybeSingle();
 
+  // Clicked twice, a second tab, or came back with the Back button: if this
+  // seat already has a Stripe page that's still open, send them to that same
+  // page instead of making another one. Two open pages for one seat would let
+  // someone pay twice. An old page with little time left is replaced, and
+  // closed once the new one is attached (closing it earlier would let its
+  // "expired" webhook give the seat away mid-request).
+  const { data: seatRow } = await admin
+    .from("founding_members")
+    .select("checkout_session_id")
+    .eq("id", seatId)
+    .maybeSingle();
+  const previousSession = seatRow?.checkout_session_id || null;
+  if (previousSession) {
+    const reused = await openCheckoutUrl(stripe, previousSession);
+    if (reused) return json({ url: reused });
+  }
+
   const metadata = { kind: "founding", seat_id: String(seatId), user_id: user.id, terms_version: TERMS_VERSION };
   const base = siteUrl();
 
@@ -86,7 +103,33 @@ export async function POST(request) {
       cancel_url: `${base}/founding?cancelled=1`,
     });
 
-    await admin.rpc("founding_attach_checkout", { p_id: seatId, p_session: session.id });
+    // Attach it only if no other request attached a page in the meantime
+    // (two clicks arriving at the same moment). If one did, close ours and
+    // send them to that one, so there's still only one page to pay on.
+    let attach = admin
+      .from("founding_members")
+      .update({ checkout_session_id: session.id, updated_at: new Date().toISOString() })
+      .eq("id", seatId)
+      .eq("status", "reserved");
+    attach = previousSession ? attach.eq("checkout_session_id", previousSession) : attach.is("checkout_session_id", null);
+    const { data: attached, error: attachError } = await attach.select("id");
+    if (attachError) throw new Error(attachError.message);
+
+    if (!attached?.length) {
+      await stripe.checkout.sessions.expire(session.id).catch(() => {});
+      const { data: winner } = await admin
+        .from("founding_members")
+        .select("checkout_session_id")
+        .eq("id", seatId)
+        .maybeSingle();
+      const url = winner?.checkout_session_id ? await openCheckoutUrl(stripe, winner.checkout_session_id, 0) : null;
+      if (url) return json({ url });
+      return json({ error: "Your payment page is already opening. Please try again in a moment." }, 409);
+    }
+    if (previousSession) {
+      // The old page is no longer attached, so closing it can't release the seat.
+      await stripe.checkout.sessions.expire(previousSession).catch(() => {});
+    }
     return json({ url: session.url });
   } catch (err) {
     console.error("[founding] Stripe checkout failed", err?.message);
@@ -94,4 +137,16 @@ export async function POST(request) {
     await admin.from("founding_members").update({ status: "expired" }).eq("id", seatId).eq("status", "reserved");
     return json({ error: "Couldn't open the payment page just now. Please try again." }, 502);
   }
+}
+
+// Returns the URL of a Stripe Checkout page that is still open with at least
+// `minMinutesLeft` to go, otherwise null.
+async function openCheckoutUrl(stripe, sessionId, minMinutesLeft = 5) {
+  try {
+    const s = await stripe.checkout.sessions.retrieve(sessionId);
+    if (s.status === "open" && s.expires_at - Date.now() / 1000 > minMinutesLeft * 60) return s.url;
+  } catch (err) {
+    console.error("[founding] couldn't check previous checkout", err?.message);
+  }
+  return null;
 }

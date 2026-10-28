@@ -57,7 +57,7 @@ async function handle(event, stripe, admin) {
       const session = event.data.object;
       if (session.metadata?.kind !== "founding") return;
       if (session.payment_status !== "paid") return; // wait for async_payment_succeeded
-      await activate(session, admin);
+      await activate(session, stripe, admin);
       return;
     }
     case "checkout.session.expired": {
@@ -85,14 +85,39 @@ async function handle(event, stripe, admin) {
   }
 }
 
-async function activate(session, admin) {
+async function activate(session, stripe, admin) {
   const seatId = Number(session.metadata.seat_id);
   const userId = session.client_reference_id;
+  const subscriptionId = typeof session.subscription === "string" ? session.subscription : session.subscription?.id;
+
+  // Paid twice for the same seat (e.g. two payment pages open at once): the
+  // seat is already active on another subscription. Stop the duplicate
+  // renewing and tell Harry so he can refund it. Pro stays on.
+  const { data: seat } = await admin
+    .from("founding_members")
+    .select("status, stripe_subscription_id")
+    .eq("id", seatId)
+    .maybeSingle();
+  if (seat?.status === "active" && seat.stripe_subscription_id && subscriptionId && seat.stripe_subscription_id !== subscriptionId) {
+    let cancelled = true;
+    try {
+      await stripe.subscriptions.cancel(subscriptionId);
+    } catch (err) {
+      cancelled = false;
+      console.error("[stripe] couldn't cancel duplicate founding subscription", subscriptionId, err?.message);
+    }
+    await notify(
+      "Founding 20: duplicate payment — please refund",
+      `${session.customer_details?.email || "A member"} paid twice for Founding seat ${seatId}.\n\nThe duplicate subscription (${subscriptionId}) ${cancelled ? "has been cancelled so it won't renew" : "could NOT be cancelled automatically: cancel it in Stripe"}. Please refund its payment in Stripe → Payments.\n\nCheckout session: ${session.id}`
+    );
+    return;
+  }
+
   const { data: seatNo, error } = await admin.rpc("founding_activate", {
     p_id: seatId,
     p_user: userId,
     p_customer: typeof session.customer === "string" ? session.customer : session.customer?.id,
-    p_subscription: typeof session.subscription === "string" ? session.subscription : session.subscription?.id,
+    p_subscription: subscriptionId,
   });
 
   if (error) {
