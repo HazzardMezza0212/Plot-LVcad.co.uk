@@ -35,13 +35,14 @@ export default function LoginForm({ next }) {
   }
 
   async function resendConfirmation() {
+    if (resent) return;
+    setResent(true); // hide the link straight away so a double-click sends one email
     const supabase = getBrowserClient();
     await supabase.auth.resend({
       type: "signup",
       email: unconfirmed,
       options: { emailRedirectTo: `${window.location.origin}/auth/confirm?next=%2Faccount%3Fwelcome%3D1` },
     });
-    setResent(true);
   }
 
   return (
