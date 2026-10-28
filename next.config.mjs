@@ -45,6 +45,11 @@ const nextConfig = {
         source: "/api/:path*",
         headers: [{ key: "Cache-Control", value: "no-store" }],
       },
+      {
+        // FOV Pro code: served per account by proxy.js, so no shared caching.
+        source: "/cctv/assets/pro/:path*",
+        headers: [{ key: "Cache-Control", value: "private, no-store" }],
+      },
     ];
   },
 
