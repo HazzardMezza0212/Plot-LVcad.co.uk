@@ -143,7 +143,11 @@ export default async function CameraPage({ params }) {
                 {v.source && (
                   <>
                     {" · "}
-                    <a href={v.source} target="_blank" rel="nofollow noopener noreferrer" style={{ color: "var(--blue)" }}>source</a>
+                    {/^https?:\/\//.test(v.source) ? (
+                      <a href={v.source} target="_blank" rel="nofollow noopener noreferrer" style={{ color: "var(--blue)" }}>source</a>
+                    ) : (
+                      `source: ${v.source}`
+                    )}
                   </>
                 )}
               </span>

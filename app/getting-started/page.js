@@ -4,6 +4,9 @@ import Footer from "@/components/site/Footer";
 import OpenPlanner from "@/components/site/OpenPlanner";
 import { SUPPORT_EMAIL } from "@/lib/site";
 import { SUPPORT_REPLY_TIME } from "@/lib/legal";
+import { PRO_LIVE } from "@/lib/plans";
+
+const SOON = PRO_LIVE ? "" : " (coming soon)";
 
 export const metadata = {
   title: "Getting started with Plot-LV FOV",
@@ -25,7 +28,7 @@ const GUIDES = [
       <>Choose a <b>PDF, PNG or JPG</b>. For a PDF, pick the page you want.</>,
       <>The plan appears as a backdrop. It&apos;s opened in your browser and never uploaded.</>,
     ],
-    tip: <><b>DWG?</b> DWG import is coming soon. For now, save it as DXF from your CAD software: DXF opens in FOV Pro, and PDF and image plans work in Free.</>,
+    tip: <><b>DWG?</b> DWG import is coming soon. For now, save it as DXF from your CAD software: DXF opens in FOV Pro{SOON}, and PDF and image plans work in Free.</>,
   },
   {
     id: "scale",
@@ -84,7 +87,7 @@ const GUIDES = [
     steps: [
       <>Use the <b>save</b> button in the toolbar to download the project as a file. Open it again later with the open button.</>,
       <>Use <b>export</b> to save the plan as a PNG to send or drop into a report.</>,
-      <>With FOV Pro, export a PDF coverage report under your logo.</>,
+      <>With FOV Pro{SOON}, export a PDF coverage report under your logo.</>,
     ],
     tip: <>Save as you go. Nothing is stored online, so closing the tab without saving loses unsaved changes.</>,
   },

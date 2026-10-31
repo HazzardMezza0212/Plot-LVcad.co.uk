@@ -2,7 +2,7 @@ import Link from "next/link";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
 import {
-  OPERATOR_NAME, TRADING_NAME, BUSINESS_ADDRESS, VAT_NUMBER, ICO_NUMBER, PRIVACY_EMAIL,
+  OPERATOR_NAME, OPERATOR_LABEL, TRADING_NAME, BUSINESS_ADDRESS, VAT_NUMBER, ICO_NUMBER, PRIVACY_EMAIL,
   SUPPORT_REPLY_TIME, LAST_UPDATED, TERMS_VERSION, PRIVACY_VERSION, VAT_NOTE,
 } from "@/lib/legal";
 import { PRO_PLANS, PRO_LIVE } from "@/lib/plans";
@@ -14,8 +14,6 @@ export const metadata = {
 };
 
 const Mail = () => <a href={`mailto:${PRIVACY_EMAIL}`}>{PRIVACY_EMAIL}</a>;
-// Placeholders still in [brackets] are highlighted so they are easy to spot.
-const V = ({ children }) => (String(children).startsWith("[") ? <span className="ph">{children}</span> : <>{children}</>);
 
 export default function LegalPage() {
   return (
@@ -52,9 +50,10 @@ export default function LegalPage() {
 
               <h3>Who we are</h3>
               <p>
-                This website and the Plot-LV tools are run by <V>{OPERATOR_NAME}</V>, a sole trader trading as {TRADING_NAME}
-                (&ldquo;we&rdquo;, &ldquo;us&rdquo;), the controller of the personal data described here. We are registered with the Information Commissioner&apos;s
-                Office, registration no. <V>{ICO_NUMBER}</V>. For any privacy question or request, email <Mail />.
+                This website and the Plot-LV tools are run by {OPERATOR_LABEL} (&ldquo;we&rdquo;, &ldquo;us&rdquo;), the controller of
+                the personal data described here.
+                {ICO_NUMBER ? <> We are registered with the Information Commissioner&apos;s Office, registration no. {ICO_NUMBER}.</> : null}{" "}
+                For any privacy question or request, email <Mail />.
               </p>
 
               <h3>What we collect and why</h3>
@@ -128,7 +127,7 @@ export default function LegalPage() {
               <h3>1. About these terms</h3>
               <p>
                 These terms apply when you use this website, the free FOV planner or FOV Pro. The service is run by{" "}
-                <V>{OPERATOR_NAME}</V>. By opening the planner, creating an account or buying Pro, you agree to them.
+                {OPERATOR_LABEL}. By opening the planner, creating an account or buying Pro, you agree to them.
               </p>
               <h3>2. Your account</h3>
               <p>
@@ -188,7 +187,7 @@ export default function LegalPage() {
               <h2 className="disp">Paying for Pro.</h2>
               {!PRO_LIVE && <p className="l">FOV Pro isn&apos;t on sale yet. These terms will apply once it launches.</p>}
               <ul>
-                <li>FOV Pro costs {PRO_PLANS.monthly.label} a month or {PRO_PLANS.yearly.label} a year. <V>{VAT_NOTE}</V>. The price you pay is shown before you confirm.</li>
+                <li>FOV Pro costs {PRO_PLANS.monthly.label} a month or {PRO_PLANS.yearly.label} a year. {VAT_NOTE}. The price you pay is shown before you confirm.</li>
                 <li>Payment is taken by Stripe. Pro switches on as soon as payment is confirmed.</li>
                 <li>Your subscription renews automatically at the end of each month or year until you cancel. Before each yearly renewal we&apos;ll email you the date and amount.</li>
                 <li>Cancel any time from <b>Plan &amp; billing</b> on your account page. You keep Pro until the end of the period you&apos;ve paid for, and no further payments are taken.</li>
@@ -237,11 +236,11 @@ export default function LegalPage() {
               <span className="kicker">Business details</span>
               <h2 className="disp">Who runs Plot-LV.</h2>
               <p>
-                {TRADING_NAME} is run by <V>{OPERATOR_NAME}</V>, a sole trader in England.<br />
-                Business address: <V>{BUSINESS_ADDRESS}</V><br />
+                {OPERATOR_NAME ? <>{TRADING_NAME} is run by {OPERATOR_NAME}, a sole trader in England.<br /></> : <>{TRADING_NAME}, England.<br /></>}
+                {BUSINESS_ADDRESS ? <>Business address: {BUSINESS_ADDRESS}<br /></> : null}
                 {VAT_NUMBER ? <>VAT number: {VAT_NUMBER}<br /></> : null}
-                ICO registration: <V>{ICO_NUMBER}</V><br />
-                Email: <Mail /> — we aim to reply within <V>{SUPPORT_REPLY_TIME}</V>.
+                {ICO_NUMBER ? <>ICO registration: {ICO_NUMBER}<br /></> : null}
+                Email: <Mail /> — we aim to reply within {SUPPORT_REPLY_TIME}.
               </p>
             </section>
           </div>

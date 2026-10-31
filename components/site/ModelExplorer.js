@@ -65,7 +65,7 @@ export default function ModelExplorer({ model, brand, variants, specLine }) {
           </div>
           <div className="ctas" style={{ justifyContent: "flex-start" }}>
             <OpenPlanner camera={v.id} label="Plan this camera — free" arrow />
-            {v.source && (
+            {/^https?:\/\//.test(v.source || "") && (
               <a className="btn btn-g" href={v.source} target="_blank" rel="nofollow noopener noreferrer">Datasheet ↗</a>
             )}
           </div>

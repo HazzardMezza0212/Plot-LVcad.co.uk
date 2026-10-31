@@ -3,6 +3,8 @@
 import { useMemo, useState } from "react";
 import Link from "next/link";
 import { wedgePath } from "@/lib/fov/wedge";
+import { PRO_LIVE } from "@/lib/plans";
+import { SUPPORT_EMAIL } from "@/lib/site";
 
 // Searchable, filterable list of camera models. `cams` is prepared on the
 // server from lib/fov/cameraPages.js, so every number matches the model pages.
@@ -70,7 +72,10 @@ export default function CameraLibrary({ cams, total }) {
         {list.length === 0 && (
           <div className="empty">
             <div className="disp" style={{ fontSize: 26, fontWeight: 600, color: "#0F1A2E", marginBottom: 8 }}>No match yet.</div>
-            Can&apos;t find your camera? Add it as a custom camera in FOV Pro, or email us and we&apos;ll add it to the library.
+            Can&apos;t find your camera?{" "}
+            {PRO_LIVE && "Add it as a custom camera in FOV Pro, or "}
+            <a href={`mailto:${SUPPORT_EMAIL}?subject=Camera%20request`} style={{ color: "var(--blue)" }}>email us</a>{" "}
+            and we&apos;ll add it to the library.
           </div>
         )}
       </div>

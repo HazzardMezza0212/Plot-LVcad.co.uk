@@ -93,8 +93,10 @@ scope too, so the home page shows the buy buttons.
 
 ## Still to do before replacing the live site
 
-- Fill in the `[BRACKETED]` values in `lib/legal.js` (company details, ICO number,
-  VAT wording, reply time) and the refund / retention placeholders on `/legal`.
+- Legal details are optional: `OPERATOR_NAME`, `BUSINESS_ADDRESS`, `ICO_NUMBER`
+  and `VAT_NUMBER` in `lib/legal.js` are blank and simply not shown. Fill them
+  in before taking payments (a sole trader selling online must show their name
+  and a postal address, and the ICO fee is needed once you hold customer data).
 - The planner at `/cctv` is a separate build: it starts PostHog without asking,
   and does not yet read `?camera=<id>`. Both need a change in the FOV repo.
 - Switch to live Stripe keys and prices, and a live webhook to

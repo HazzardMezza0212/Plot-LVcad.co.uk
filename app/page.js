@@ -37,9 +37,11 @@ const JSON_LD = {
 };
 
 const FAQ = [
-  ["Is it really free?", "Yes. No card, no account. Open the planner and start. The free version stays when you upgrade or if you cancel Pro."],
+  ["Is it really free?", "Yes. No card, no account. Open the planner and start. The free version stays free."],
   ["Do my drawings get uploaded?", "No. Plans open and process in your browser, on your device. Projects save as a file on your computer."],
-  ["I work in DWG.", "DWG import is coming soon. For now, save it as DXF from your CAD software and open it in Pro. Image and PDF plans work in Free."],
+  ["I work in DWG.", PRO_LIVE
+    ? "DWG import is coming soon. For now, save it as DXF from your CAD software and open it in Pro. Image and PDF plans work in Free."
+    : "PDF and image plans work in the free planner today. DXF import arrives with FOV Pro, and DWG after that."],
   ...(PRO_LIVE
     ? [["Can I cancel Pro?", "Yes, any time from your account page, in two clicks. You keep Pro until the end of the period you've paid for."]]
     : [["When does Pro launch?", "Soon. Leave your email in the Pro box above and we'll tell you once when it opens. The free planner is open now."]]),
@@ -124,7 +126,7 @@ export default function Home() {
           <div className="txt">
             <span className="kicker">01 — Field of view</span>
             <h2 className="h disp">Walls don&apos;t lie. Neither does this.</h2>
-            <p>Every camera draws its coverage from the published field of view. With Pro, walls, doors and obstacles cut it off, so blind spots show up on the plan, not on site.</p>
+            <p>Every camera draws its coverage from the published field of view. {PRO_LIVE ? "With Pro" : "With Pro (coming soon)"}, walls, doors and obstacles cut it off, so blind spots show up on the plan, not on site.</p>
             <span className="chip free">✓ Free: field of view</span> <span className="chip pro">◆ Pro{PRO_LIVE ? "" : " (coming soon)"}: walls block the view</span>
           </div>
           <div className="shot"><div className="blob" style={{ background: "#DCE2FF" }} /><div className="fr"><img src="/site/coverage.webp" alt="Office floor plan with six cameras and their coverage clipped by walls" loading="lazy" /></div></div>
