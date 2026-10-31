@@ -1,32 +1,25 @@
 import { Resend } from "resend";
+import { guardPublicPost, clip, EMAIL } from "@/lib/publicForm";
 
 export async function POST(request) {
+  const guard = await guardPublicPost(request, { name: "interest", limit: 5, windowMs: 60 * 60 * 1000 });
+  if (guard.response) return guard.response;
+  const body = guard.body;
+
+  // Honeypot (see /api/contact).
+  if (body.company) return Response.json({ ok: true });
+
+  const email = clip(body.email, 254).toLowerCase();
+  if (!EMAIL.test(email)) {
+    return Response.json({ error: "Please enter a valid email address." }, { status: 400 });
+  }
   if (!process.env.RESEND_API_KEY) {
-    return Response.json(
-      {
-        error:
-          "Interest list isn't configured yet — add RESEND_API_KEY to .env.local.",
-      },
-      { status: 500 }
-    );
+    console.warn("[interest] RESEND_API_KEY is not set");
+    return Response.json({ error: "The interest list isn't open just yet. Please try again later." }, { status: 503 });
   }
 
-  const { name, email, company } = await request.json();
-
-  // Honeypot: real visitors never see or fill this field, so a filled value
-  // means a bot. Report success without actually doing anything, so the bot
-  // doesn't know it was caught.
-  if (company) {
-    return Response.json({ ok: true });
-  }
-
-  if (!email) {
-    return Response.json({ error: "Email is required." }, { status: 400 });
-  }
-
+  const [firstName, ...rest] = clip(body.name, 120).split(/\s+/);
   const resend = new Resend(process.env.RESEND_API_KEY);
-  const [firstName, ...rest] = (name || "").trim().split(" ");
-
   const { error } = await resend.contacts.create({
     email,
     unsubscribed: false,
@@ -35,14 +28,12 @@ export async function POST(request) {
   });
 
   if (error) {
-    // Already on the list (perhaps unsubscribed earlier): they've just asked
-    // again, so re-subscribe them.
-    if (/already exists|duplicate/i.test(error.message || "")) {
-      const { error: updateError } = await resend.contacts.update({ email, unsubscribed: false });
-      if (!updateError) return Response.json({ ok: true });
-    }
+    // Already on the list. Report success but change nothing: if they had
+    // unsubscribed, a stranger typing their address here must not re-subscribe
+    // them (they can opt back in from their account page).
+    if (/already exists|duplicate/i.test(error.message || "")) return Response.json({ ok: true });
+    console.error("[interest] could not add contact", error.name || "error");
     return Response.json({ error: "Couldn't add you just now. Please try again." }, { status: 500 });
   }
-
   return Response.json({ ok: true });
 }

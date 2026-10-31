@@ -1,8 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { track } from "@/lib/analytics";
+import Turnstile, { TURNSTILE_SITE_KEY } from "./Turnstile";
 
 // FOV Pro early access signup on the landing page. Posts to /api/early-access.
 const ROLES = ["Installer", "Consultant / designer", "Integrator", "End user / facilities", "Other"];
@@ -10,9 +11,15 @@ const ROLES = ["Installer", "Consultant / designer", "Integrator", "End user / f
 export default function ProEarlyAccess() {
   const [state, setState] = useState("idle"); // idle | sending | done
   const [error, setError] = useState("");
+  const [token, setToken] = useState("");
+  const captcha = useRef(null);
 
   async function onSubmit(e) {
     e.preventDefault();
+    if (TURNSTILE_SITE_KEY && !token) {
+      setError("Please complete the check below first.");
+      return;
+    }
     setState("sending");
     setError("");
     const f = new FormData(e.target);
@@ -28,6 +35,7 @@ export default function ProEarlyAccess() {
           updates: f.get("updates") === "on",
           company: f.get("extra_info"),
           source: "landing",
+          turnstileToken: token,
         }),
       });
       const data = await res.json().catch(() => ({}));
@@ -37,6 +45,7 @@ export default function ProEarlyAccess() {
     } catch (err) {
       setError(err.message);
       setState("idle");
+      captcha.current?.reset();
     }
   }
 
@@ -82,6 +91,7 @@ export default function ProEarlyAccess() {
             <label className="pro-check" htmlFor="pro-updates">
               <input id="pro-updates" name="updates" type="checkbox" /> Also email me Plot-LV product updates
             </label>
+            <Turnstile ref={captcha} onToken={setToken} />
             <button className="btn-primary" type="submit" disabled={state === "sending"}>
               {state === "sending" ? "Joining…" : "Join early access"}
             </button>

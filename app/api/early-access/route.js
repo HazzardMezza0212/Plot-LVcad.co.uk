@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 import { createClient } from "@/lib/supabase/server";
-import { isSameOrigin } from "@/lib/requestGuard";
+import { guardPublicPost } from "@/lib/publicForm";
 import { getContactStatus } from "@/lib/mailingList";
 
 // "Join FOV Pro early access", used by the landing page and the FOV tool.
@@ -15,16 +15,15 @@ const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const clip = (v, n) => (typeof v === "string" ? v.trim().slice(0, n) : "");
 
 export async function POST(request) {
-  if (!isSameOrigin(request)) {
-    return Response.json({ error: "Please use the form on plotlvcad.co.uk." }, { status: 403 });
-  }
-
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return Response.json({ error: "Something went wrong. Please try again." }, { status: 400 });
-  }
+  // The FOV tool (a separate static build) also posts here with source "tool" and cannot
+  // show the CAPTCHA, so only the landing page form is CAPTCHA-checked. Both are
+  // same-origin checked and rate limited.
+  const guard = await guardPublicPost(request, {
+    name: "early-access", limit: 5, windowMs: 60 * 60 * 1000,
+    captcha: (b) => b.source !== "tool",
+  });
+  if (guard.response) return guard.response;
+  const body = guard.body;
 
   // Honeypot: real visitors never see or fill this field.
   if (body.company) return Response.json({ ok: true });

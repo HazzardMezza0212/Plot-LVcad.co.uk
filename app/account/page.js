@@ -16,6 +16,11 @@ export default async function AccountPage({ searchParams }) {
   const user = supabase ? (await supabase.auth.getUser()).data.user : null;
   if (isSupabaseConfigured && !user) redirect("/login?next=/account");
   const profile = user ? await loadProfile(supabase, user) : null;
+  // FOV Pro: the user's own row in public.entitlements (readable by them, writable by nobody).
+  const { data: entitlement } = user
+    ? await supabase.from("entitlements").select("pro").eq("user_id", user.id).maybeSingle()
+    : { data: null };
+  const pro = entitlement?.pro === true;
 
   const meta = user?.user_metadata || {};
   const fullName = meta.full_name || "";
@@ -82,7 +87,7 @@ export default async function AccountPage({ searchParams }) {
             <div className="pp-head">
               <span className="pp-code mono">PLOT-LV-FOV</span>
               <span className="status-pill open">
-                <span className="dot"></span> Free preview
+                <span className="dot"></span> {pro ? "Pro" : "Free preview"}
               </span>
             </div>
             <h2 className="display">FOV</h2>
@@ -111,7 +116,7 @@ export default async function AccountPage({ searchParams }) {
                   <div><dt>Email</dt><dd>{user.email}</dd></div>
                   {meta.company && <div><dt>Company</dt><dd>{meta.company}</dd></div>}
                   {memberSince && <div><dt>Member since</dt><dd>{memberSince}</dd></div>}
-                  <div><dt>Plan</dt><dd>FOV preview (free)</dd></div>
+                  <div><dt>Plan</dt><dd>{pro ? "FOV Pro" : "FOV preview (free)"}</dd></div>
                 </dl>
                 <Link href="/account/password" className="auth-link">Change password →</Link>
               </section>

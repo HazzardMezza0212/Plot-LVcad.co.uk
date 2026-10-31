@@ -1,18 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import { useRef, useState } from "react";
 import Link from "next/link";
 import { getBrowserClient } from "@/lib/supabase/client";
 import { TextField, PasswordField, Checkbox, SubmitButton, Notice, friendlyError } from "./fields";
 import { MARKETING_WORDING, TERMS_VERSION, PRIVACY_VERSION } from "@/lib/legal";
 import CheckEmail from "./CheckEmail";
 import { track } from "@/lib/analytics";
+import Turnstile, { TURNSTILE_SITE_KEY } from "@/components/Turnstile";
 
 export default function SignupForm() {
   const [state, setState] = useState("idle"); // idle | loading | done
   const [error, setError] = useState("");
   const [password, setPassword] = useState("");
   const [sentTo, setSentTo] = useState("");
+  const [captchaToken, setCaptchaToken] = useState("");
+  const captcha = useRef(null);
 
   async function onSubmit(e) {
     e.preventDefault();
@@ -23,8 +26,16 @@ export default function SignupForm() {
       setError("Use at least 8 characters for your password.");
       return;
     }
+    if (!form.get("age")) {
+      setError("Please confirm you are 18 or over to create an account.");
+      return;
+    }
     if (!form.get("terms")) {
       setError("Please agree to the terms of use to create an account.");
+      return;
+    }
+    if (TURNSTILE_SITE_KEY && !captchaToken) {
+      setError("Please complete the check below first.");
       return;
     }
     setError("");
@@ -40,12 +51,15 @@ export default function SignupForm() {
           // Only an explicit tick counts as consent. The database records
           // this choice, with the wording shown, in the consent log.
           marketing_opt_in: form.get("marketing") === "on",
+          age_confirmed_18_plus: true,
           terms_version: TERMS_VERSION,
           privacy_version: PRIVACY_VERSION,
         },
         emailRedirectTo: `${window.location.origin}/auth/confirm?next=%2Faccount%3Fwelcome%3D1`,
+        captchaToken: captchaToken || undefined,
       },
     });
+    captcha.current?.reset();
 
     if (err) {
       setError(friendlyError(err));
@@ -96,6 +110,7 @@ export default function SignupForm() {
       />
       <div className="consent-group">
         <Checkbox id="marketing">{MARKETING_WORDING}</Checkbox>
+        <Checkbox id="age" required>I am 18 or over.</Checkbox>
         <Checkbox id="terms" required>
           I agree to the{" "}
           <Link href="/terms" target="_blank">terms of use</Link>{" "}
@@ -104,6 +119,7 @@ export default function SignupForm() {
         </Checkbox>
       </div>
       {error && <Notice tone="error">{error}</Notice>}
+      <Turnstile ref={captcha} onToken={setCaptchaToken} />
       <SubmitButton
         state={state}
         idle="Create account"
