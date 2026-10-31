@@ -113,9 +113,9 @@ export default function SignupForm() {
         <Checkbox id="age" required>I am 18 or over.</Checkbox>
         <Checkbox id="terms" required>
           I agree to the{" "}
-          <Link href="/terms" target="_blank">terms of use</Link>{" "}
+          <Link href="/legal#terms" target="_blank">terms of use</Link>{" "}
           and have read the{" "}
-          <Link href="/privacy" target="_blank">privacy notice</Link>.
+          <Link href="/legal#privacy" target="_blank">privacy notice</Link>.
         </Checkbox>
       </div>
       {error && <Notice tone="error">{error}</Notice>}

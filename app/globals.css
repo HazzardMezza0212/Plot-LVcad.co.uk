@@ -1,20 +1,27 @@
 :root{
-  /* Light theme. --red is the brand accent for fills and large type;
-     --red-ink / --green are deep enough for small text on white. */
-  --bg:#FFFFFF;
-  --bg-alt:#F6F7F9;
-  --ink:#0E1A28;
-  --muted:#5B6B7E;
-  --line:#D3DAE3;
-  --line-soft:#E6EAF0;
-  --red:#E8472C;
-  --red-btn:#D63A1F;
-  --red-ink:#C9351C;
-  --red-tint:rgba(232,71,44,.06);
-  --green:#23804D;
-  --green-tint:rgba(35,128,77,.07);
+  /* 2026-11 redesign palette, mapped onto the existing token names so the
+     account and sign-in pages pick it up without a rewrite.
+     Navy and orange come from the Plot-LV icon. --red is the orange accent
+     for fills and large type; --red-ink is dark enough for small text. */
+  --bg:#F4F5F7;
+  --bg-alt:#FFFFFF;
+  --ink:#0F1A2E;
+  --muted:#5B667A;
+  --line:#D5DAE4;
+  --line-soft:#E6E9F2;
+  --red:#FF7A45;
+  --red-btn:#0F1A2E;
+  --red-ink:#A8461D;
+  --red-tint:rgba(255,122,69,.08);
+  --green:#14653F;
+  --green-tint:rgba(47,191,113,.1);
   --on-accent:#FFFFFF;
-  --shadow:0 1px 2px rgba(14,26,40,.04), 0 8px 24px rgba(14,26,40,.06);
+  --shadow:0 1px 2px rgba(15,26,46,.04), 0 18px 40px -24px rgba(15,26,46,.35);
+
+  /* Old font variable names now point at the new self-hosted fonts. */
+  --font-inter:var(--font-geist-sans), system-ui, sans-serif;
+  --font-jetbrains-mono:var(--font-geist-mono), ui-monospace, monospace;
+  --font-space-grotesk:"Bricolage Grotesque Variable", var(--font-geist-sans), sans-serif;
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html{scroll-behavior:smooth;}
@@ -1085,3 +1092,10 @@ footer{background:var(--bg);}
   .cam-tables{grid-template-columns:1fr;}
   .cam-index th, .cam-index td{padding:10px 8px; font-size:.84rem;}
 }
+
+/* ---------- 2026-11 redesign: light touch for the older pages ---------- */
+.grid-bg{display:none;}
+.nav-cta,.btn-primary,.btn-secondary,.btn-ghost,.submit-btn,.price-btn{border-radius:999px !important;}
+.btn-primary,.nav-cta,.submit-btn{background:var(--ink) !important;color:#fff !important;}
+.btn-primary:active,.nav-cta:active,.submit-btn:active,.btn-secondary:active{transform:scale(.95);}
+.acct-card,.auth-card{border-radius:24px !important;}

@@ -1,447 +1,190 @@
-"use client";
+import Header from "@/components/site/Header";
+import Footer from "@/components/site/Footer";
+import OpenPlanner from "@/components/site/OpenPlanner";
+import ProPricing from "@/components/site/ProPricing";
+import { CANONICAL_URL } from "@/lib/site";
+import { MODELS } from "@/lib/fov/cameraPages";
 
-import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import SiteNav from "@/components/SiteNav";
-import SiteFooter from "@/components/SiteFooter";
-import LaunchButton from "@/components/LaunchButton";
-import ProEarlyAccess from "@/components/ProEarlyAccess";
-import Turnstile, { TURNSTILE_SITE_KEY } from "@/components/Turnstile";
+export const metadata = {
+  title: { absolute: "Plot-LV FOV — free CCTV field of view calculator & layout planner" },
+  description:
+    "Plan CCTV cameras on your own floor plan. See each camera's field of view, pixel density (px/m) and DORI levels, clipped by walls and checked room by room. Free in your browser, no sign-up.",
+  alternates: { canonical: "/" },
+};
 
-// Flame is not on sale. Pricing and checkout were removed from this page
-// (see git history before this commit to restore them); app/api/checkout
-// is unchanged and still unused.
+const BRANDS = [...new Set(MODELS.map((m) => m.brand))];
 
-const NAV_LINKS = [
-  ["Products", "#products"],
-  ["FOV", "/cctv-field-of-view-calculator"],
-  ["Pro", "#pro"],
-  ["Flame", "/flame"],
-  ["Contact", "#contact"],
+const JSON_LD = {
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  name: "Plot-LV FOV",
+  applicationCategory: "DesignApplication",
+  operatingSystem: "Web browser",
+  url: CANONICAL_URL,
+  description:
+    "CCTV field of view calculator and layout planner: field of view, pixel density and DORI levels on your own floor plan, clipped by walls.",
+  offers: [
+    { "@type": "Offer", name: "Free", price: "0", priceCurrency: "GBP" },
+    { "@type": "Offer", name: "FOV Pro monthly", price: "19", priceCurrency: "GBP" },
+    { "@type": "Offer", name: "FOV Pro yearly", price: "199", priceCurrency: "GBP" },
+  ],
+};
+
+const FAQ = [
+  ["Is it really free?", "Yes. No card, no account. Open the planner and start. The free version stays when you upgrade or if you cancel Pro."],
+  ["Do my drawings get uploaded?", "No. Plans open and process in your browser, on your device. Projects save as a file on your computer."],
+  ["I work in DWG.", "Save it as DXF from your CAD software and open it in Pro. Image and PDF plans work in Free."],
+  ["Can I cancel Pro?", "Yes, any time from your account page, in two clicks. You keep Pro until the end of the period you've paid for."],
+  ["Who signs off the design?", "You do. FOV does the calculation and the paperwork; the designer stays responsible for the design."],
 ];
 
-const FOV_FEATURES = [
-  "Coverage wedges, pixel density and DORI ranges per camera",
-  "Walls, doors and obstacles block the view by height",
-  "Security layers with a pass/fail coverage check per room",
-  "Camera point-of-view preview",
-  "Save projects as files, export the plan as PNG",
-];
-
-const FLAME_FEATURES = [
-  "Fire alarm layouts against BS 5839-1:2025",
-  "17 automated checks as you draw",
-  "Coverage, audibility, call-point reach, zoning, escape routes",
-  "Report a competent person can sign off",
-  "Windows desktop app, works fully offline",
-];
-
-// "Continue as guest": opens FOV without an account (see app/guest/route.js).
-function GuestOption({ compact = false }) {
+function Plus() {
   return (
-    <div className={`guest-option${compact ? " compact" : ""}`}>
-      <LaunchButton href="/guest" label="Continue as guest →" className="guest-link" icon={false} />
-      <span className="guest-terms">
-        No account needed. By continuing you agree to the{" "}
-        <Link href="/terms">terms of use</Link>.
-      </span>
-    </div>
+    <span className="pl" aria-hidden="true">
+      <svg width="14" height="14" viewBox="0 0 14 14"><path d="M7 1v12M1 7h12" stroke="#0F1A2E" strokeWidth="2" /></svg>
+    </span>
   );
 }
 
-// Celebration burst shown when someone registers for Flame updates.
-function makeBurst() {
-  const colors = ["#E8472C", "#23804D", "#0E1A28", "#8FA1B5"];
-  return Array.from({ length: 46 }, (_, i) => ({
-    id: i,
-    x: `${Math.round((Math.random() - 0.5) * 380)}px`,
-    y: `${Math.round((Math.random() - 0.72) * 340)}px`,
-    r: `${Math.round((Math.random() - 0.5) * 720)}deg`,
-    d: `${(Math.random() * 0.15).toFixed(2)}s`,
-    c: colors[i % 4],
-  }));
-}
-
 export default function Home() {
-  const [contactSent, setContactSent] = useState(false);
-  const [contactError, setContactError] = useState("");
-  const [contactToken, setContactToken] = useState("");
-  const [interestToken, setInterestToken] = useState("");
-  const contactCaptcha = useRef(null);
-  const interestCaptcha = useRef(null);
-  const [interestSubmitting, setInterestSubmitting] = useState(false);
-  const [interestSent, setInterestSent] = useState(false);
-  const [interestError, setInterestError] = useState("");
-  const [burst, setBurst] = useState(null);
-
-  // Until React hydrates, form buttons would fall back to a native browser
-  // submit that silently drops the submission. Keep them disabled until the
-  // handlers are attached.
-  const [ready, setReady] = useState(false);
-  const [deleted, setDeleted] = useState(false);
-  useEffect(() => {
-    // eslint-disable-next-line react-hooks/set-state-in-effect
-    setReady(true);
-    setDeleted(new URLSearchParams(window.location.search).get("deleted") === "1");
-  }, []);
-
-  async function handleContactSubmit(e) {
-    e.preventDefault();
-    setContactError("");
-    if (TURNSTILE_SITE_KEY && !contactToken) {
-      setContactError("Please complete the check below first.");
-      return;
-    }
-    const formData = new FormData(e.target);
-    try {
-      const res = await fetch("/api/contact", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: formData.get("email"),
-          message: formData.get("message"),
-          company: formData.get("extra_info"),
-          turnstileToken: contactToken,
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Something went wrong. Please try again.");
-      setContactSent(true);
-    } catch (err) {
-      setContactError(err.message);
-      contactCaptcha.current?.reset();
-    }
-  }
-
-  async function handleInterestSubmit(e) {
-    e.preventDefault();
-    setInterestSubmitting(true);
-    setInterestError("");
-
-    if (TURNSTILE_SITE_KEY && !interestToken) {
-      setInterestError("Please complete the check below first.");
-      setInterestSubmitting(false);
-      return;
-    }
-
-    const formData = new FormData(e.target);
-    try {
-      const res = await fetch("/api/interest", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          email: formData.get("email"),
-          company: formData.get("extra_info"),
-          turnstileToken: interestToken,
-        }),
-      });
-      const data = await res.json().catch(() => ({}));
-      if (!res.ok) throw new Error(data.error || "Something went wrong.");
-      setBurst(makeBurst());
-      setInterestSent(true);
-    } catch (err) {
-      setInterestError(err.message);
-      interestCaptcha.current?.reset();
-    } finally {
-      setInterestSubmitting(false);
-    }
-  }
-
   return (
-    <>
-      <div className="grid-bg"></div>
+    <div className="v2">
+      {/* Intro: plays once per browser session. The inline script runs before
+          paint, so returning visitors never see it flash. */}
+      <script
+        dangerouslySetInnerHTML={{
+          __html:
+            "try{if(sessionStorage.getItem('plv_intro')){document.documentElement.dataset.intro='seen'}else{sessionStorage.setItem('plv_intro','1')}}catch(e){}",
+        }}
+      />
+      <div className="boot" aria-hidden="true">
+        <div className="radar"><div className="w" /><img src="/site/plv-icon.png" alt="" /></div>
+        <div className="bootlines mono"><span>Calibrating scale…</span><span>Placing cameras…</span><span>Checking coverage ✓</span></div>
+        <div className="bar"><i /></div>
+      </div>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(JSON_LD) }} />
 
-      <SiteNav links={NAV_LINKS} />
-      {deleted && (
-        <div className="home-notice" role="status">
-          Your account and its data have been deleted, and you&apos;ve been removed from our mailing list.
-        </div>
-      )}
-
-      <section className="hero hero-centered">
-        <div className="hero-inner">
-          <div className="eyebrow">Plot-LV — design tools for building services</div>
-          <h1>
-            Lay it out.
-            <br />
-            Check the <em>coverage</em>.
-            <br />
-            Hand it over.
-          </h1>
-          <p className="sub">
-            Plot-LV makes focused design tools for building services engineers.
-            FOV, for CCTV layouts, is free to try in your browser today. Flame,
-            for fire alarm layouts, is in closed development.
+      <div className="wrap">
+        <Header />
+        <section className="hero">
+          <span className="pill"><b>FREE</b>CCTV coverage planner · runs in your browser</span>
+          <h1 className="big disp">See every <em className="hl">blind spot</em> before you drill.</h1>
+          <p className="lede">
+            Drop in a floor plan, place real camera models and watch coverage, pixel density and DORI levels
+            update — clipped by every wall.
           </p>
-          <div className="cta-row">
-            <Link href="/signup" className="btn-primary">
-              Try FOV free — create an account
-            </Link>
-            <Link href="/login" className="btn-secondary">
-              Log in →
-            </Link>
+          <div className="ctas">
+            <OpenPlanner arrow />
+            <a className="btn btn-g" href="#pricing">See Pro</a>
           </div>
-          <GuestOption />
-          <div className="meta-row">
-            <span>
-              <span className="dot"></span> FOV preview open now
+          <p className="micro">No sign-up. By opening the planner you agree to the <a href="/legal#terms">terms of use</a>.</p>
+
+          <div className="stage" aria-label="Exploded view of a Plot-LV FOV project: the drawing, the cameras and walls, and the ground heatmap">
+            <div className="cone" style={{ left: "calc(50% + 330px)", top: 70 }} />
+            <div className="orb" style={{ left: "calc(50% + 300px)", top: 110 }} />
+            <div className="stack">
+              <div className="lyr"><img src="/site/plan.webp" alt="The example office floor plan that opens with Plot-LV FOV" /></div>
+              <div className="lyr l2"><img src="/site/coverage.webp" alt="Cameras placed on the plan with field of view clipped by walls" /></div>
+              <div className="lyr l3"><img src="/site/heatmap.webp" alt="Ground heatmap showing where the working level is met" /></div>
+            </div>
+            <div className="call" style={{ left: "calc(50% - 470px)", top: 150 }}>
+              <span className="tx"><small className="mono">LAYER 03</small>Ground heatmap</span><span className="ln" /><span className="dot" />
+            </div>
+            <div className="call" style={{ left: "calc(50% - 500px)", top: 330, animationDelay: "3.6s" }}>
+              <span className="tx"><small className="mono">LAYER 02</small>Walls clip the view</span><span className="ln" /><span className="dot" />
+            </div>
+            <div className="call" style={{ left: "calc(50% + 230px)", top: 520, animationDelay: "3.8s" }}>
+              <span className="dot" /><span className="ln" /><span className="tx"><small className="mono">LAYER 01</small>Your drawing, to scale</span>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <div className="mq" aria-label="Camera brands in the library">
+        <div className="tr disp">
+          {[0, 1].map((n) => (
+            <span key={n} style={{ display: "inline-flex", gap: 56 }} aria-hidden={n === 1}>
+              {BRANDS.map((b) => <span key={b}>{b}</span>)}
+              <span style={{ color: "var(--blue)" }}>{BRANDS.length} manufacturers in the library</span>
             </span>
-            <span>Runs in your browser</span>
-            <span>Plans stay on your device</span>
+          ))}
+        </div>
+      </div>
+
+      <div className="wrap" id="features">
+        <section className="feat">
+          <div className="txt">
+            <span className="kicker">01 — Field of view</span>
+            <h2 className="h disp">Walls don&apos;t lie. Neither does this.</h2>
+            <p>Every camera draws its real coverage from the published field of view, and walls, doors and obstacles cut it off. Blind spots show up on the plan, not on site.</p>
+            <span className="chip free">✓ Free</span>
           </div>
-        </div>
-      </section>
+          <div className="shot"><div className="blob" style={{ background: "#DCE2FF" }} /><div className="fr"><img src="/site/coverage.webp" alt="Office floor plan with six cameras and their coverage clipped by walls" loading="lazy" /></div></div>
+        </section>
 
-      <section className="leanstrip">
-        <div className="lean-inner">
-          <div className="lean-item">
-            <div className="lean-num">01</div>
-            <div className="lean-label">One job each</div>
-            <div className="lean-desc">Each tool covers one discipline and does it properly, rather than one bloated package.</div>
+        <section className="feat flip">
+          <div className="txt">
+            <span className="kicker">02 — Camera POV</span>
+            <h2 className="h disp">Stand where the camera stands.</h2>
+            <p>Right-click any camera and see the floor from its position, coloured by whether it meets your working level. Spot the gap before the client does.</p>
+            <span className="chip free">✓ Free</span>
           </div>
-          <div className="lean-item">
-            <div className="lean-num">02</div>
-            <div className="lean-label">Your drawings stay yours</div>
-            <div className="lean-desc">Plans are processed on your device. FOV runs in your browser; Flame runs on your PC.</div>
+          <div className="shot"><div className="blob" style={{ background: "#FFE3D6" }} /><div className="fr"><img src="/site/pov.webp" alt="Camera view window showing the floor from the camera's position, coloured by coverage" loading="lazy" /></div></div>
+        </section>
+
+        <section className="feat">
+          <div className="txt">
+            <span className="kicker">03 — The numbers</span>
+            <h2 className="h disp">Every camera, fully specified.</h2>
+            <p>Focal length, mounting height, rotation and target distance — and the pixel density you get at that distance, checked against your working level. Lens data comes from the manufacturer&apos;s datasheet.</p>
+            <span className="chip free">✓ Free</span>
           </div>
-          <div className="lean-item">
-            <div className="lean-num">03</div>
-            <div className="lean-label">No host CAD</div>
-            <div className="lean-desc">Not plugins. No AutoCAD, Revit or other CAD package needed.</div>
+          <div className="shot"><div className="blob" style={{ background: "#DDF3E7" }} /><div className="fr" style={{ maxWidth: 520, marginLeft: "auto" }}><img src="/site/settings.webp" alt="Camera settings dialog showing model, focal length, mounting height and density at target of 69 px/m" loading="lazy" /></div></div>
+        </section>
+
+        <section className="feat flip">
+          <div className="txt">
+            <span className="kicker">04 — The workspace</span>
+            <h2 className="h disp">Walls, doors, rooms, cameras. One screen.</h2>
+            <p>Draw walls, rooms, obstacles and doors over your plan, give each room a security layer, and pick from the camera library. Everything runs in your browser.</p>
+            <span className="chip free">✓ Free</span>
           </div>
-          <div className="lean-item">
-            <div className="lean-num">04</div>
-            <div className="lean-label">Clear about limits</div>
-            <div className="lean-desc">Preview data is labelled unverified until it has been checked against datasheets.</div>
+          <div className="shot"><div className="blob" style={{ background: "#FFE3D6" }} /><div className="fr"><img src="/site/workspace.webp" alt="The full Plot-LV FOV workspace with toolbar, floor plan, cameras and the security layers panel" loading="lazy" /></div></div>
+        </section>
+      </div>
+
+      <div className="wrap">
+        <section className="stats">
+          <p className="disp">
+            From <span className="k">25 px/m</span> to tell someone&apos;s there, to <span className="k k2">250 px/m</span> to
+            identify a stranger — FOV draws the line on your plan, to <span className="k">EN 62676-4</span>.
+          </p>
+        </section>
+
+        <section className="price" id="pricing">
+          <div className="ph-head">
+            <span className="kicker">Pricing</span>
+            <h2 className="h disp" style={{ marginBottom: 0 }}>Free to plan. Pro to hand over.</h2>
           </div>
-        </div>
-      </section>
+          <ProPricing />
+        </section>
 
-      <section id="products" className="products">
-        <div className="range-head">
-          <h2 className="display">The Plot-LV range</h2>
-          <p>Two tools today, one open to try. More disciplines to follow.</p>
-        </div>
+        <section className="faq" aria-label="Questions">
+          {FAQ.map(([q, a], i) => (
+            <details key={q} open={i === 0}>
+              <summary>{q}<Plus /></summary>
+              <p>{a}</p>
+            </details>
+          ))}
+        </section>
 
-        <div className="product-pair">
-          <article className="product-panel is-open" id="fov">
-            <div className="pp-head">
-              <span className="pp-code mono">PLOT-LV-FOV</span>
-              <span className="status-pill open">
-                <span className="dot"></span> Free preview · open now
-              </span>
-            </div>
-            <h3>FOV</h3>
-            <p className="pp-sub">CCTV coverage design</p>
-            <p className="pp-desc">
-              Load a floor plan, set the scale, draw walls and doors, then place
-              cameras and see exactly what each one covers.
-            </p>
-            <ul className="pp-list">
-              {FOV_FEATURES.map((f) => (
-                <li key={f}>{f}</li>
-              ))}
-            </ul>
-            <div className="pp-actions">
-              <Link href="/signup" className="btn-primary">
-                Create free account
-              </Link>
-              <Link href="/login" className="btn-secondary">
-                Log in
-              </Link>
-            </div>
-            <GuestOption compact />
-            <Link href="/cctv-field-of-view-calculator" className="pro-link">How FOV works: field of view, pixel density and DORI →</Link>
-            <a href="#pro" className="pro-link">FOV Pro is coming: join early access →</a>
-            <p className="pp-note mono">
-              Preview: camera data is marked unverified while it is checked
-              against manufacturer datasheets.
-            </p>
-          </article>
+        <section className="final">
+          <h2 className="disp">Place your<br />first camera.</h2>
+          <OpenPlanner arrow />
+        </section>
 
-          <article className="product-panel is-closed" id="flame">
-            <div className="pp-head">
-              <span className="pp-code mono">PLOT-LV-FLAME</span>
-              <span className="status-pill closed">Not available to buy</span>
-            </div>
-            <h3>Flame</h3>
-            <p className="pp-sub">Fire alarm layout &amp; compliance</p>
-            <p className="pp-desc">
-              Trace the building, place catalogue devices and watch every room
-              checked against the standard as you work.
-            </p>
-            <ul className="pp-list">
-              {FLAME_FEATURES.map((f) => (
-                <li key={f}>{f}</li>
-              ))}
-            </ul>
-            <div className="pp-actions">
-              <Link href="/flame" className="btn-secondary">
-                See how it works →
-              </Link>
-              <a href="#updates" className="btn-ghost">
-                Get updates
-              </a>
-            </div>
-            <p className="pp-note mono">
-              Flame isn&apos;t on sale at the moment. Register below to hear when
-              it opens.
-            </p>
-          </article>
-        </div>
-
-        <div className="next-up">
-          <span className="mono next-tag">Next up</span>
-          <span>
-            <strong>Lux</strong> — lighting layout and illuminance checks.
-            In development.
-          </span>
-        </div>
-      </section>
-
-      <ProEarlyAccess />
-
-      <section className="getstarted" id="start">
-        <div className="range-head">
-          <h2 className="display">Start with FOV in three steps</h2>
-          <p>Free while it&apos;s in preview. No card needed.</p>
-        </div>
-        <ol className="steps-row">
-          <li>
-            <span className="step-num mono">01</span>
-            <h4>Create your account</h4>
-            <p>Your name, work email and a password. Takes under a minute.</p>
-          </li>
-          <li>
-            <span className="step-num mono">02</span>
-            <h4>Open your workspace</h4>
-            <p>Your account page is where you launch FOV and manage your details.</p>
-          </li>
-          <li>
-            <span className="step-num mono">03</span>
-            <h4>Lay out your cameras</h4>
-            <p>Load a plan, set the scale, place cameras and check the coverage.</p>
-          </li>
-        </ol>
-        <div className="cta-row fc-center">
-          <Link href="/signup" className="btn-primary">
-            Create free account
-          </Link>
-        </div>
-      </section>
-
-      <section
-        className={`beta-banner${interestSent ? " registered" : ""}`}
-        id="updates"
-      >
-        <div className="beta-inner">
-          <div className="beta-copy">
-            <div className="ptag mono">Flame · not on sale yet</div>
-            <h3>Get told when Flame opens</h3>
-            <p>
-              Leave your email and we&apos;ll let you know when Flame is
-              available. One email, no spam.
-            </p>
-          </div>
-          <form className="beta-form" onSubmit={handleInterestSubmit}>
-            <input
-              type="text"
-              name="extra_info"
-              tabIndex={-1}
-              autoComplete="off"
-              className="hp-field"
-              aria-hidden="true"
-            />
-            <input
-              type="email"
-              name="email"
-              placeholder="you@company.com"
-              aria-label="Email address"
-              required
-              disabled={interestSent}
-            />
-            {!interestSent && <Turnstile ref={interestCaptcha} onToken={setInterestToken} />}
-            <button
-              className="submit-btn"
-              type="submit"
-              disabled={!ready || interestSubmitting || interestSent}
-            >
-              {interestSent
-                ? "You're on the list ✓"
-                : interestSubmitting
-                ? "Adding you…"
-                : "Notify me"}
-            </button>
-            {burst && (
-              <span className="confetti" aria-hidden="true">
-                {burst.map((p) => (
-                  <i
-                    key={p.id}
-                    style={{
-                      "--x": p.x,
-                      "--y": p.y,
-                      "--r": p.r,
-                      animationDelay: p.d,
-                      background: p.c,
-                    }}
-                  />
-                ))}
-              </span>
-            )}
-            {interestSent ? (
-              <p className="beta-registered mono">
-                ● REGISTERED — we&apos;ll email you when Flame opens
-              </p>
-            ) : (
-              <p className="form-privacy">
-                We&apos;ll only email you about Plot-LV, and you can unsubscribe
-                at any time. <Link href="/privacy">Privacy notice</Link>
-              </p>
-            )}
-          </form>
-        </div>
-        {interestError && <p className="error-msg beta-error">{interestError}</p>}
-      </section>
-
-      <section id="contact" className="contact-section">
-        <div className="panel contact-panel">
-          <div className="ptitle display">Talk to us</div>
-          <div className="pdesc">
-            We&apos;re building these alongside the people who&apos;ll use them.
-            Feedback, feature requests and questions are all welcome, as are
-            multi-seat and custom-standard enquiries.
-          </div>
-          <form onSubmit={handleContactSubmit}>
-            <input
-              type="text"
-              name="extra_info"
-              tabIndex={-1}
-              autoComplete="off"
-              className="hp-field"
-              aria-hidden="true"
-            />
-            <div className="field">
-              <label htmlFor="contact-email">Email</label>
-              <input id="contact-email" type="email" name="email" required />
-            </div>
-            <div className="field">
-              <label htmlFor="contact-message">Message</label>
-              <textarea id="contact-message" name="message" required maxLength={5000}></textarea>
-            </div>
-            {!contactSent && <Turnstile ref={contactCaptcha} onToken={setContactToken} />}
-            {contactError && <p className="error-msg" role="alert">{contactError}</p>}
-            <button className="submit-btn" type="submit" disabled={!ready || contactSent}>
-              {contactSent ? "Message sent ✓" : "Send message"}
-            </button>
-            <p className="form-privacy">
-              We&apos;ll use your email only to reply to you.{" "}
-              <Link href="/privacy">Privacy notice</Link>
-            </p>
-          </form>
-        </div>
-      </section>
-
-      <SiteFooter />
-    </>
+        <Footer />
+      </div>
+    </div>
   );
 }

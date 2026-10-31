@@ -48,6 +48,19 @@ const nextConfig = {
     ];
   },
 
+  // 2026-11 redesign: pages that were merged into others. Permanent (308)
+  // so search engines move their ranking across.
+  async redirects() {
+    return [
+      { source: "/cctv-field-of-view-calculator", destination: "/", permanent: true },
+      { source: "/guides/how-to-calculate-cctv-field-of-view", destination: "/cctv-cameras#dori", permanent: true },
+      { source: "/flame", destination: "/", permanent: true },
+      { source: "/privacy", destination: "/legal#privacy", permanent: true },
+      { source: "/terms", destination: "/legal#terms", permanent: true },
+      { source: "/founding", destination: "/#pricing", permanent: false },
+    ];
+  },
+
   // Temporary: serve the Plot-LV CCTV preview (static Vite build in
   // public/cctv) at /cctv. Remove this and public/cctv to take it down.
   async rewrites() {

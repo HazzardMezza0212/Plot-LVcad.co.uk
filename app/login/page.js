@@ -6,7 +6,7 @@ import { Notice } from "@/components/auth/fields";
 import LaunchButton from "@/components/LaunchButton";
 import { isSupabaseConfigured, safeNextPath } from "@/lib/supabase/config";
 
-export const metadata = { title: "Log in | Plot-LV" };
+export const metadata = { title: "Log in" };
 
 const MESSAGES = {
   link: ["error", "That link has expired or was opened in a different browser. Log in below, or request a new link."],
@@ -32,7 +32,7 @@ export default async function LoginPage({ searchParams }) {
           <LaunchButton href="/guest" label="Continue as guest" className="btn-secondary auth-guest-btn" icon={false} />
           <p className="guest-terms">
             Use FOV without an account. By continuing you agree to the{" "}
-            <Link href="/terms">terms of use</Link>.
+            <Link href="/legal#terms">terms of use</Link>.
           </p>
         </div>
       )}

@@ -1,92 +1,94 @@
 import Link from "next/link";
-import SiteNav from "@/components/SiteNav";
-import SiteFooter from "@/components/SiteFooter";
-import LaunchButton from "@/components/LaunchButton";
-import { MODELS, modelsByBrand, fmtDeg, fmtMetres } from "@/lib/fov/cameraPages";
-
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+import Header from "@/components/site/Header";
+import Footer from "@/components/site/Footer";
+import OpenPlanner from "@/components/site/OpenPlanner";
+import CameraLibrary from "@/components/site/CameraLibrary";
+import { MODELS, DORI, fmtMetres, fmtDeg } from "@/lib/fov/cameraPages";
 
 export const metadata = {
-  title: "CCTV camera field of view & DORI distances by model | Plot-LV FOV",
-  description: `Field of view, scene width, pixel density and DORI distances for ${MODELS.length} CCTV camera models from Axis, Hikvision, Hanwha Vision, Avigilon, Bosch, Dahua and more.`,
-  alternates: { canonical: `${siteUrl}/cctv-cameras` },
+  title: "CCTV camera field of view & DORI distances by model",
+  description: `Field of view, pixel density and detect, observe, recognise and identify distances for ${MODELS.length} CCTV camera models from ${new Set(MODELS.map((m) => m.brand)).size} manufacturers, from the manufacturers' published figures. Plan any of them on your own floor plan, free.`,
+  alternates: { canonical: "/cctv-cameras" },
 };
 
-const NAV_LINKS = [
-  ["How FOV works", "/cctv-field-of-view-calculator"],
-  ["PPM & DORI", "/cctv-field-of-view-calculator#dori"],
-  ["Guides", "/guides/how-to-calculate-cctv-field-of-view"],
-];
+const DORI_TEXT = {
+  Detect: "A person is there",
+  Observe: "What they're doing and wearing",
+  Recognise: "Someone who knows them can say who",
+  Identify: "Enough to identify a stranger",
+};
 
-function summary(m) {
-  const fov = m.variants.map((v) => v.hfovDeg);
-  const lo = Math.min(...fov), hi = Math.max(...fov);
-  const px = Math.max(...m.variants.map((v) => v.horizontalPixels));
-  const id = Math.max(...m.variants.map((v) => v.dori[3].metres));
+function summarise(m) {
+  const fovs = m.variants.map((v) => v.hfovDeg);
+  const fovMin = Math.min(...fovs), fovMax = Math.max(...fovs);
+  const identify = Math.max(...m.variants.map((v) => v.dori[3].metres));
   return {
-    fov: lo === hi ? fmtDeg(lo) : `${fmtDeg(lo)}–${fmtDeg(hi)}`,
-    px: px.toLocaleString("en-GB"),
-    id: fmtMetres(id),
+    slug: m.slug,
+    brand: m.brand,
+    model: m.model,
+    fovMin,
+    fovMax,
+    fovLabel: fovMin === fovMax ? fmtDeg(fovMax) : `${fmtDeg(fovMin)}–${fmtDeg(fovMax)}`,
+    px: Math.max(...m.variants.map((v) => v.horizontalPixels)),
+    identify,
+    identifyLabel: fmtMetres(identify),
   };
 }
 
-export default function CamerasIndex() {
+export default function CameraLibraryPage() {
+  const cams = MODELS.map(summarise);
+  const brands = new Set(MODELS.map((m) => m.brand)).size;
+
   return (
-    <>
-      <div className="grid-bg"></div>
-      <SiteNav tag="FOV" links={NAV_LINKS} />
-
-      <section className="cam-hero">
-        <p className="cam-crumbs mono">Plot-LV FOV camera library</p>
-        <h1 className="display">CCTV camera field of view &amp; DORI distances</h1>
-        <p className="cam-lede">
-          {MODELS.length} camera models from the Plot-LV FOV library. Each page shows how wide the camera
-          sees, its scene width and pixel density at distance, and how far it can detect, observe,
-          recognise and identify.
+    <div className="v2">
+      <div className="wrap">
+        <Header />
+        <div className="crumb mono"><Link href="/">Home</Link> / Camera library</div>
+        <h1 className="pageh disp">Every camera, <em className="hl">to scale</em>.</h1>
+        <p className="lede-l">
+          Field of view, pixel density and how far each of {MODELS.length} models from {brands} manufacturers can detect,
+          observe, recognise and identify a person — from the manufacturers&apos; published figures.
         </p>
-        <div className="cta-row">
-          <LaunchButton href="/guest" label="Plan cameras on your floor plan — free" />
-        </div>
-      </section>
 
-      <section className="cam-body">
-        {modelsByBrand().map(([brand, models]) => (
-          <div className="cam-brand" key={brand}>
-            <h2 className="display">{brand}</h2>
-            <table className="fovl-dori cam-index">
-              <thead>
-                <tr>
-                  <th scope="col">Model</th>
-                  <th scope="col">Field of view</th>
-                  <th scope="col">Horizontal px</th>
-                  <th scope="col">Identify up to</th>
-                </tr>
-              </thead>
-              <tbody>
-                {models.map((m) => {
-                  const s = summary(m);
-                  return (
-                    <tr key={m.slug}>
-                      <th scope="row">
-                        <Link href={`/cctv-cameras/${m.slug}`}>{m.model}</Link>
-                      </th>
-                      <td>{s.fov}</td>
-                      <td className="mono">{s.px}</td>
-                      <td>{s.id} m</td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+        <CameraLibrary cams={cams} total={MODELS.length} />
+        <p className="note">
+          Identify distance is measured along the centre of the view at 250 px/m with the camera level, at the widest-reaching
+          lens setting. Mounting height and tilt shorten it in practice.
+        </p>
+
+        <section className="ruler" id="dori">
+          <span className="mono" style={{ fontSize: 13, color: "#AFC0FF" }}>PIXEL DENSITY · EN 62676-4</span>
+          <h2 className="disp">How much detail will this camera actually give you?</h2>
+          <p className="l">
+            A camera&apos;s field of view is how wide it sees. The further from the lens, the wider the scene and the thinner
+            its pixels are spread. Pixel density counts the horizontal pixels covering one metre of scene — and four levels
+            tell you what that buys you.
+          </p>
+          <div className="scale" role="list">
+            {DORI.map((d, i) => (
+              <div className="tk" role="listitem" key={d.level} style={{ left: `${8 + i * 28}%` }}>
+                <div className="v disp">{d.ppm}<small>px/m</small></div>
+                <div className="st" />
+                <div className="lb">{d.level}</div>
+                <div className="ds">{DORI_TEXT[d.level]}</div>
+              </div>
+            ))}
           </div>
-        ))}
-        <p className="cam-status">
-          Ranges cover the lens settings in the library. &quot;Identify up to&quot; is the distance along the centre of
-          the view at 250 px/m, with the camera level; mounting height and tilt shorten it in practice.
-        </p>
-      </section>
+          <p className="l" style={{ marginTop: 34 }}>
+            <b style={{ color: "#fff" }}>Working it out yourself:</b> scene width = 2 × distance × tan(field of view ÷ 2), and
+            pixel density = horizontal pixels ÷ scene width. A 1,920-pixel camera looking at a scene 7.7 m wide gives about
+            250 px/m — enough to identify. Where the scene is 31 m wide, it gives about 62 px/m: you can see what&apos;s
+            happening, but not who it is.
+          </p>
+        </section>
 
-      <SiteFooter />
-    </>
+        <section className="cta">
+          <h2 className="disp">Got the camera?<br />Now place it.</h2>
+          <OpenPlanner arrow />
+        </section>
+
+        <Footer />
+      </div>
+    </div>
   );
 }
