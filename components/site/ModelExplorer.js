@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import OpenPlanner from "./OpenPlanner";
+import CameraDome from "./CameraDome";
 
 // The interactive top of a camera model page: pick a lens setting, see the
 // identify distance and a 3D coverage wedge coloured by DORI level, and drag
@@ -83,7 +84,7 @@ export default function ModelExplorer({ model, brand, variants, specLine }) {
               <path d={arc(dist, v.hfovDeg)} fill="none" stroke="#0F1A2E" strokeWidth="2" strokeDasharray="6 6" />
             </svg>
           </div>
-          <div className="morb" aria-hidden="true" />
+          <CameraDome className="cam3d mcam" />
           <div className="leg mono">
             {["Identify", "Recognise", "Observe", "Detect"].map((l) => (
               <span key={l}>

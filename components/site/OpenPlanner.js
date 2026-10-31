@@ -8,7 +8,7 @@ import { track } from "@/lib/analytics";
 // lets the browser into the free planner at /cctv without an account (it sets
 // a small guest cookie). Pass `camera` to ask the planner to start with that
 // model (the planner reads ?camera=<slug> once that is supported there).
-export default function OpenPlanner({ label = "Open the planner — free", small = false, ghost = false, camera, arrow = false }) {
+export default function OpenPlanner({ label = "Open the planner — free", small = false, ghost = false, accent = false, large = false, camera, arrow = false }) {
   const [opening, setOpening] = useState(false);
 
   function go() {
@@ -20,11 +20,11 @@ export default function OpenPlanner({ label = "Open the planner — free", small
     setTimeout(() => window.location.assign(href), reduce ? 50 : 1150);
   }
 
-  const cls = `btn ${ghost ? "btn-g" : "btn-p"}${small ? " sm" : ""}`;
+  const cls = `btn ${ghost ? "btn-g" : accent ? "btn-o glow" : "btn-p"}${small ? " sm" : ""}${large ? " lg" : ""}`;
   return (
     <>
       <button type="button" className={cls} onClick={go} disabled={opening}>
-        {!ghost && <span className="in" />}
+        {!ghost && !accent && <span className="in" />}
         {label}
         {arrow && <span className="ar" aria-hidden="true">→</span>}
       </button>

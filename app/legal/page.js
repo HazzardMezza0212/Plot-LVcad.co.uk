@@ -2,7 +2,7 @@ import Link from "next/link";
 import Header from "@/components/site/Header";
 import Footer from "@/components/site/Footer";
 import {
-  OPERATOR_NAME, TRADING_NAME, COMPANY_NUMBER, REGISTERED_OFFICE, VAT_NUMBER, ICO_NUMBER, PRIVACY_EMAIL,
+  OPERATOR_NAME, TRADING_NAME, BUSINESS_ADDRESS, VAT_NUMBER, ICO_NUMBER, PRIVACY_EMAIL,
   SUPPORT_REPLY_TIME, LAST_UPDATED, TERMS_VERSION, PRIVACY_VERSION, VAT_NOTE,
 } from "@/lib/legal";
 import { PRO_PLANS } from "@/lib/plans";
@@ -33,7 +33,7 @@ export default function LegalPage() {
             <a href="#terms">Terms of use</a>
             <a href="#pro">FOV Pro subscriptions</a>
             <a href="#cookies">Cookies</a>
-            <a href="#company">Company details</a>
+            <a href="#company">Business details</a>
             <Link href="/getting-started#support">Support</Link>
           </nav>
 
@@ -52,8 +52,8 @@ export default function LegalPage() {
 
               <h3>Who we are</h3>
               <p>
-                This website and the Plot-LV tools are run by <V>{OPERATOR_NAME}</V> (&ldquo;{TRADING_NAME}&rdquo;, &ldquo;we&rdquo;, &ldquo;us&rdquo;),
-                the controller of the personal data described here. We are registered with the Information Commissioner&apos;s
+                This website and the Plot-LV tools are run by <V>{OPERATOR_NAME}</V>, a sole trader trading as {TRADING_NAME}
+                (&ldquo;we&rdquo;, &ldquo;us&rdquo;), the controller of the personal data described here. We are registered with the Information Commissioner&apos;s
                 Office, registration no. <V>{ICO_NUMBER}</V>. For any privacy question or request, email <Mail />.
               </p>
 
@@ -93,7 +93,7 @@ export default function LegalPage() {
                 <li>Billing records: 6 years, as HMRC requires, even if you delete your account.</li>
                 <li>Mailing list: until you unsubscribe; after that only your address, marked unsubscribed, so we never email you by mistake.</li>
                 <li>Messages you send us: up to two years.</li>
-                <li>Analytics: <V>[X months]</V>. Technical logs: days to weeks, held by our hosting providers.</li>
+                <li>Analytics events and session recordings: up to 12 months. Technical logs: days to weeks, held by our hosting providers.</li>
               </ul>
 
               <h3>Your rights</h3>
@@ -190,10 +190,17 @@ export default function LegalPage() {
                 <li>FOV Pro costs {PRO_PLANS.monthly.label} a month or {PRO_PLANS.yearly.label} a year. <V>{VAT_NOTE}</V>. The price you pay is shown before you confirm.</li>
                 <li>Payment is taken by Stripe. Pro switches on as soon as payment is confirmed.</li>
                 <li>Your subscription renews automatically at the end of each month or year until you cancel. Before each yearly renewal we&apos;ll email you the date and amount.</li>
-                <li>Cancel any time from <b>Plan &amp; billing</b> on your account page. You keep Pro until the end of the period you&apos;ve paid for, and no further payments are taken. <V>[Refund policy for part-used periods]</V></li>
+                <li>Cancel any time from <b>Plan &amp; billing</b> on your account page. You keep Pro until the end of the period you&apos;ve paid for, and no further payments are taken.</li>
                 <li>
                   <b>If you buy as a consumer</b> you have 14 days to cancel. At checkout you ask for Pro to start straight away;
                   if you then cancel within the 14 days, we refund what you paid minus the value of the days you&apos;ve used.
+                </li>
+                <li>
+                  <b>Refunds.</b> Monthly payments aren&apos;t refunded for a part-used month. If a yearly plan renews and you
+                  didn&apos;t mean it to, tell us within 14 days of the renewal payment and we&apos;ll refund it in full.
+                  Otherwise we don&apos;t refund part-used years, but cancelling stops the next renewal. If Pro doesn&apos;t work as
+                  described and we can&apos;t fix it, we&apos;ll refund the unused part of what you paid. None of this affects your
+                  legal rights.
                 </li>
                 <li>We&apos;ll give you at least 30 days&apos; notice of a price change, and you can cancel before it applies.</li>
                 <li>If a payment fails, Stripe will retry it. If it still can&apos;t be taken, your account moves back to the free version.</li>
@@ -226,12 +233,11 @@ export default function LegalPage() {
 
             {/* ------------------------------------------------ COMPANY */}
             <section className="sec" id="company">
-              <span className="kicker">Company details</span>
+              <span className="kicker">Business details</span>
               <h2 className="disp">Who runs Plot-LV.</h2>
               <p>
-                {TRADING_NAME} is a trading name of <V>{OPERATOR_NAME}</V>, registered in England and Wales.<br />
-                Company number: <V>{COMPANY_NUMBER}</V><br />
-                Registered office: <V>{REGISTERED_OFFICE}</V><br />
+                {TRADING_NAME} is run by <V>{OPERATOR_NAME}</V>, a sole trader in England.<br />
+                Business address: <V>{BUSINESS_ADDRESS}</V><br />
                 {VAT_NUMBER ? <>VAT number: {VAT_NUMBER}<br /></> : null}
                 ICO registration: <V>{ICO_NUMBER}</V><br />
                 Email: <Mail /> — we aim to reply within <V>{SUPPORT_REPLY_TIME}</V>.

@@ -27,9 +27,9 @@ export default function ProPricing() {
         <span style={{ color: "var(--mute)" }}>Quick layouts, surveys and sanity checks.</span>
         <ul>
           <li><Tick />PDF, PNG and JPG plans</li>
-          <li><Tick />Wall-aware coverage and camera POV</li>
-          <li><Tick />Room targets with pass or fail</li>
-          <li><Tick />Save projects, export PNG</li>
+          <li><Tick />Place cameras and see each field of view</li>
+          <li><Tick />Camera library</li>
+          <li><Tick />No account needed</li>
         </ul>
         <OpenPlanner ghost label="Open the planner" />
       </div>
@@ -55,10 +55,11 @@ export default function ProPricing() {
         </span>
         <ul>
           <li><Tick pro />Everything in Free</li>
-          <li><Tick pro />DXF import, scale read from the drawing</li>
-          <li><Tick pro />Walls straight from your CAD wall layer</li>
-          <li><Tick pro />Pixel density and DORI per camera, no limits</li>
-          <li><Tick pro />Client-ready PDF coverage report under your logo</li>
+          <li><Tick pro />DXF import, scale read from the drawing (DWG coming soon)</li>
+          <li><Tick pro />Walls from your CAD layer block each camera&apos;s view</li>
+          <li><Tick pro />Pixel density and DORI per camera, coverage per room</li>
+          <li><Tick pro />PDF coverage report under your logo, plus exports</li>
+          <li><Tick pro />Your own custom cameras</li>
         </ul>
         <Link className="btn btn-o" href={`/account?upgrade=${plan}#pro`}>
           Get FOV Pro <span className="ar" aria-hidden="true">→</span>

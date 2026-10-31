@@ -25,7 +25,7 @@ const GUIDES = [
       <>Choose a <b>PDF, PNG or JPG</b>. For a PDF, pick the page you want.</>,
       <>The plan appears as a backdrop. It&apos;s opened in your browser and never uploaded.</>,
     ],
-    tip: <><b>DWG?</b> Save it as DXF from your CAD software. DXF opens in FOV Pro; PDF and image plans work in Free.</>,
+    tip: <><b>DWG?</b> DWG import is coming soon. For now, save it as DXF from your CAD software: DXF opens in FOV Pro, and PDF and image plans work in Free.</>,
   },
   {
     id: "scale",
