@@ -1,6 +1,6 @@
 import { Resend } from "resend";
 import { createAdminClient } from "@/lib/supabase/admin";
-import { getStripe, LIVEMODE, isActiveStatus, currentSubscription } from "@/lib/pro";
+import { getStripe, LIVEMODE, isActiveStatus, currentSubscription, WEBHOOK_SECRET } from "@/lib/pro";
 
 // Stripe webhook for FOV Pro. This is the only place Pro is switched on or
 // off for paying customers.
@@ -16,7 +16,7 @@ import { getStripe, LIVEMODE, isActiveStatus, currentSubscription } from "@/lib/
 // ignored, so a test purchase can never give Pro on the live site.
 
 export async function POST(request) {
-  const secret = process.env.STRIPE_PRO_WEBHOOK_SECRET;
+  const secret = WEBHOOK_SECRET;
   const stripe = getStripe();
   const admin = createAdminClient();
   if (!secret || !stripe || !admin) {
