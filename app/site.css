@@ -388,7 +388,8 @@
   .v2 .feat,.v2 .pg2,.v2 .mhero,.v2 .read{grid-template-columns:minmax(0,1fr)}
   .v2 .feat{gap:36px;padding-top:80px}
   .v2 .feat.flip .txt{order:0}
-  .v2 .stage{height:520px;transform:scale(.62);margin:-80px 0 -70px}
+  .v2 .stage{height:520px;transform:scale(.62);transform-origin:50% 0;margin:100px 0 -250px}
+  .v2 .micro{position:relative;z-index:2}
   .v2 .call{display:none}
   .v2 .links a.t{display:none}
   .v2 .pro{transform:none}
