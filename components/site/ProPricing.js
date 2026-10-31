@@ -3,7 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import OpenPlanner from "./OpenPlanner";
-import { PRO_PLANS } from "@/lib/plans";
+import { PRO_PLANS, PRO_LIVE } from "@/lib/plans";
+import ProNotify from "./ProNotify";
 import { VAT_NOTE } from "@/lib/legal";
 
 function Tick({ pro }) {
@@ -36,7 +37,7 @@ export default function ProPricing() {
 
       <div className="pc pro">
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", gap: 12, flexWrap: "wrap" }}>
-          <h3>FOV Pro</h3>
+          <h3 style={{ display: "flex", alignItems: "center", gap: 10 }}>FOV Pro {!PRO_LIVE && <span className="badge">Coming soon</span>}</h3>
           <div className="bill" role="group" aria-label="Billing period">
             <button type="button" aria-pressed={plan === "monthly"} onClick={() => setPlan("monthly")}>Monthly</button>
             <button type="button" aria-pressed={plan === "yearly"} onClick={() => setPlan("yearly")}>Yearly</button>
@@ -61,12 +62,18 @@ export default function ProPricing() {
           <li><Tick pro />PDF coverage report under your logo, plus exports</li>
           <li><Tick pro />Your own custom cameras</li>
         </ul>
-        <Link className="btn btn-o" href={`/account?upgrade=${plan}#pro`}>
-          Get FOV Pro <span className="ar" aria-hidden="true">→</span>
-        </Link>
-        <span className="muted mono" style={{ fontSize: 12, marginTop: 12, textAlign: "center" }}>
-          {VAT_NOTE} · secure checkout by Stripe · cancel any time
-        </span>
+        {PRO_LIVE ? (
+          <>
+            <Link className="btn btn-o" href={`/account?upgrade=${plan}#pro`}>
+              Get FOV Pro <span className="ar" aria-hidden="true">→</span>
+            </Link>
+            <span className="muted mono" style={{ fontSize: 12, marginTop: 12, textAlign: "center" }}>
+              {VAT_NOTE} · secure checkout by Stripe · cancel any time
+            </span>
+          </>
+        ) : (
+          <ProNotify />
+        )}
       </div>
     </div>
   );

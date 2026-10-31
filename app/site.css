@@ -415,3 +415,16 @@ html[data-intro="seen"] .v2 .l2{animation-delay:.2s}
 html[data-intro="seen"] .v2 .l3{animation-delay:.35s}
 html[data-intro="seen"] .v2 .call{animation-delay:1.2s !important}
 html[data-intro="seen"] .v2-ck.delay{animation-delay:0s}
+
+/* ---------- Pro "notify me" form ---------- */
+.v2 .notify{display:flex;flex-direction:column;gap:12px}
+.v2 .notify-row{display:flex;gap:8px;flex-wrap:wrap}
+.v2 .notify input[type=email]{flex:1 1 200px;min-height:52px;border-radius:999px;border:0;padding:0 18px;font:inherit;font-size:15px;background:rgba(255,255,255,.1);color:#fff;box-shadow:inset 0 0 0 1px rgba(255,255,255,.25)}
+.v2 .notify input[type=email]::placeholder{color:#AFB9CC}
+.v2 .notify input[type=email]:focus{outline:2px solid var(--acc);outline-offset:2px}
+.v2 .notify-chk{display:flex;gap:10px;align-items:flex-start;font-size:13px;color:#AFB9CC;cursor:pointer}
+.v2 .notify-chk input{width:18px;height:18px;margin:0;accent-color:var(--acc);flex:none}
+.v2 .notify-err{color:#FFB4A0;font-size:14px;margin:0}
+.v2 .notify-small{font-size:12px;color:#AFB9CC;margin:0}
+.v2 .notify-small a{color:#fff}
+.v2 .notify-done{background:rgba(255,255,255,.08);border-radius:18px;padding:16px 18px;font-size:15px;line-height:1.5;animation:v2pop .5s cubic-bezier(.2,1.4,.4,1) both}

@@ -79,6 +79,18 @@ to the webhook URL.
 - [ ] Delete a test account that has Pro: subscription is cancelled in Stripe
 - [ ] Phone check: no sideways scrolling, menus usable
 
+## Going live before Pro is ready
+
+The site can replace the live one now with Pro shown as "coming soon":
+leave `NEXT_PUBLIC_PRO_LIVE` and `PRO_CHECKOUT_ENABLED` unset in Production.
+The Pro box then shows a "Tell me when it launches" form (saved to the
+existing `pro_early_access` table) instead of a buy button, and checkout is
+refused. On launch day: set the live Stripe settings and both switches to `1`
+in Production, then redeploy.
+
+For testing payments on a preview, set `NEXT_PUBLIC_PRO_LIVE=1` in the Preview
+scope too, so the home page shows the buy buttons.
+
 ## Still to do before replacing the live site
 
 - Fill in the `[BRACKETED]` values in `lib/legal.js` (company details, ICO number,

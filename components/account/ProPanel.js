@@ -61,7 +61,10 @@ export default function ProPanel({ pro, open, initialPlan = "yearly", sub, missi
   if (!open) {
     return (
       <div className="pro-panel">
-        <p className="pp-desc" style={{ margin: 0 }}>FOV Pro checkout isn&apos;t switched on yet.</p>
+        <p className="pp-desc" style={{ margin: 0 }}>
+          FOV Pro is coming soon: DXF import, walls from your CAD layer, pixel density per camera, coverage per room and
+          a PDF report. <a href="/#pricing" className="inline-a">Get told when it launches</a>.
+        </p>
         {missing.length > 0 && (
           <p className="small mono">Preview only — missing settings: {missing.join(", ")}</p>
         )}

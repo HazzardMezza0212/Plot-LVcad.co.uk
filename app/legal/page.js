@@ -5,7 +5,7 @@ import {
   OPERATOR_NAME, TRADING_NAME, BUSINESS_ADDRESS, VAT_NUMBER, ICO_NUMBER, PRIVACY_EMAIL,
   SUPPORT_REPLY_TIME, LAST_UPDATED, TERMS_VERSION, PRIVACY_VERSION, VAT_NOTE,
 } from "@/lib/legal";
-import { PRO_PLANS } from "@/lib/plans";
+import { PRO_PLANS, PRO_LIVE } from "@/lib/plans";
 
 export const metadata = {
   title: "Privacy, terms and cookies",
@@ -186,6 +186,7 @@ export default function LegalPage() {
             <section className="sec" id="pro">
               <span className="kicker">FOV Pro subscriptions</span>
               <h2 className="disp">Paying for Pro.</h2>
+              {!PRO_LIVE && <p className="l">FOV Pro isn&apos;t on sale yet. These terms will apply once it launches.</p>}
               <ul>
                 <li>FOV Pro costs {PRO_PLANS.monthly.label} a month or {PRO_PLANS.yearly.label} a year. <V>{VAT_NOTE}</V>. The price you pay is shown before you confirm.</li>
                 <li>Payment is taken by Stripe. Pro switches on as soon as payment is confirmed.</li>

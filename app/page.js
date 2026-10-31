@@ -5,6 +5,7 @@ import ProPricing from "@/components/site/ProPricing";
 import CameraDome from "@/components/site/CameraDome";
 import { CANONICAL_URL } from "@/lib/site";
 import { MODELS } from "@/lib/fov/cameraPages";
+import { PRO_LIVE } from "@/lib/plans";
 
 export const metadata = {
   title: { absolute: "Plot-LV FOV — free CCTV field of view calculator & layout planner" },
@@ -26,8 +27,12 @@ const JSON_LD = {
     "CCTV field of view calculator and layout planner: field of view, pixel density and DORI levels on your own floor plan, clipped by walls.",
   offers: [
     { "@type": "Offer", name: "Free", price: "0", priceCurrency: "GBP" },
-    { "@type": "Offer", name: "FOV Pro monthly", price: "19", priceCurrency: "GBP" },
-    { "@type": "Offer", name: "FOV Pro yearly", price: "199", priceCurrency: "GBP" },
+    ...(PRO_LIVE
+      ? [
+          { "@type": "Offer", name: "FOV Pro monthly", price: "19", priceCurrency: "GBP" },
+          { "@type": "Offer", name: "FOV Pro yearly", price: "199", priceCurrency: "GBP" },
+        ]
+      : []),
   ],
 };
 
@@ -35,7 +40,9 @@ const FAQ = [
   ["Is it really free?", "Yes. No card, no account. Open the planner and start. The free version stays when you upgrade or if you cancel Pro."],
   ["Do my drawings get uploaded?", "No. Plans open and process in your browser, on your device. Projects save as a file on your computer."],
   ["I work in DWG.", "DWG import is coming soon. For now, save it as DXF from your CAD software and open it in Pro. Image and PDF plans work in Free."],
-  ["Can I cancel Pro?", "Yes, any time from your account page, in two clicks. You keep Pro until the end of the period you've paid for."],
+  ...(PRO_LIVE
+    ? [["Can I cancel Pro?", "Yes, any time from your account page, in two clicks. You keep Pro until the end of the period you've paid for."]]
+    : [["When does Pro launch?", "Soon. Leave your email in the Pro box above and we'll tell you once when it opens. The free planner is open now."]]),
   ["Who signs off the design?", "You do. FOV does the calculation and the paperwork; the designer stays responsible for the design."],
 ];
 
@@ -118,7 +125,7 @@ export default function Home() {
             <span className="kicker">01 — Field of view</span>
             <h2 className="h disp">Walls don&apos;t lie. Neither does this.</h2>
             <p>Every camera draws its coverage from the published field of view. With Pro, walls, doors and obstacles cut it off, so blind spots show up on the plan, not on site.</p>
-            <span className="chip free">✓ Free: field of view</span> <span className="chip pro">◆ Pro: walls block the view</span>
+            <span className="chip free">✓ Free: field of view</span> <span className="chip pro">◆ Pro{PRO_LIVE ? "" : " (coming soon)"}: walls block the view</span>
           </div>
           <div className="shot"><div className="blob" style={{ background: "#DCE2FF" }} /><div className="fr"><img src="/site/coverage.webp" alt="Office floor plan with six cameras and their coverage clipped by walls" loading="lazy" /></div></div>
         </section>
@@ -138,7 +145,7 @@ export default function Home() {
             <span className="kicker">03 — The numbers</span>
             <h2 className="h disp">Every camera, fully specified.</h2>
             <p>Focal length, mounting height, rotation and target distance — and the pixel density you get at that distance, checked against your working level. Lens data comes from the manufacturer&apos;s datasheet.</p>
-            <span className="chip pro">◆ Pro</span>
+            <span className="chip pro">◆ Pro{PRO_LIVE ? "" : " · coming soon"}</span>
           </div>
           <div className="shot"><div className="blob" style={{ background: "#DDF3E7" }} /><div className="fr" style={{ maxWidth: 520, marginLeft: "auto" }}><img src="/site/settings.webp" alt="Camera settings dialog showing model, focal length, mounting height and density at target of 69 px/m" loading="lazy" /></div></div>
         </section>
