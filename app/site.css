@@ -388,7 +388,10 @@
   .v2 .feat,.v2 .pg2,.v2 .mhero,.v2 .read{grid-template-columns:minmax(0,1fr)}
   .v2 .feat{gap:36px;padding-top:80px}
   .v2 .feat.flip .txt{order:0}
-  .v2 .stage{height:520px;transform:scale(.62);transform-origin:50% 0;margin:100px 0 -250px}
+  /* The 3D stack is fenced in vertically (clip-path) so no browser, Safari
+     included, can draw it over the text above or the logos below. */
+  .v2 .stage{height:680px;transform:scale(.62);transform-origin:50% 0;margin:20px 0 -250px;clip-path:inset(0 -100vw)}
+  .v2 .stage .stack{top:64%}
   .v2 .micro{position:relative;z-index:2}
   .v2 .call{display:none}
   .v2 .links a.t{display:none}
