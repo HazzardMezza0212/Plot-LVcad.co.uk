@@ -7,6 +7,8 @@ import DataControls from "@/components/account/DataControls";
 import { createClient } from "@/lib/supabase/server";
 import { loadProfile } from "@/lib/account";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { isProEntitled } from "@/lib/stripe/entitlement";
+import ManageBilling from "@/components/account/ManageBilling";
 
 export const metadata = { title: "Your account | Plot-LV" };
 
@@ -18,9 +20,10 @@ export default async function AccountPage({ searchParams }) {
   const profile = user ? await loadProfile(supabase, user) : null;
   // FOV Pro: the user's own row in public.entitlements (readable by them, writable by nobody).
   const { data: entitlement } = user
-    ? await supabase.from("entitlements").select("pro").eq("user_id", user.id).maybeSingle()
+    ? await supabase.from("entitlements").select("pro, status, grace_until, stripe_customer_id").eq("user_id", user.id).maybeSingle()
     : { data: null };
-  const pro = entitlement?.pro === true;
+  const pro = isProEntitled(entitlement);
+  const hasBilling = Boolean(entitlement?.stripe_customer_id);
 
   const meta = user?.user_metadata || {};
   const fullName = meta.full_name || "";
@@ -71,6 +74,16 @@ export default async function AccountPage({ searchParams }) {
             Password updated.
           </div>
         )}
+        {params.upgraded && (pro ? (
+          <div className="acct-banner success">
+            <span className="tick-badge" aria-hidden="true">✓</span>
+            Welcome to FOV Pro.
+          </div>
+        ) : (
+          <div className="acct-banner">
+            Thanks. Pro switches on once Stripe confirms your payment, usually within a minute. Refresh this page if it hasn&apos;t yet.
+          </div>
+        ))}
         {!user && (
           <div className="acct-banner">
             Accounts are being switched on. You can use the FOV preview as a guest in the meantime.
@@ -118,6 +131,7 @@ export default async function AccountPage({ searchParams }) {
                   {memberSince && <div><dt>Member since</dt><dd>{memberSince}</dd></div>}
                   <div><dt>Plan</dt><dd>{pro ? "FOV Pro" : "FOV preview (free)"}</dd></div>
                 </dl>
+                {hasBilling && <ManageBilling />}
                 <Link href="/account/password" className="auth-link">Change password →</Link>
               </section>
             )}

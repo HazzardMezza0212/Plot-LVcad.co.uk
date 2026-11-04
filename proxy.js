@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { SUPABASE_URL, SUPABASE_KEY, isSupabaseConfigured } from "@/lib/supabase/config";
+import { isProEntitled } from "@/lib/stripe/entitlement";
 
 // Runs before the routes in `config.matcher` (including the static CCTV tool
 // in public/cctv). It refreshes the Supabase session cookie and:
@@ -49,10 +50,10 @@ export async function proxy(request) {
     // Row-level security lets a user read only their own entitlement row.
     const { data: ent, error } = await supabase
       .from("entitlements")
-      .select("pro")
+      .select("pro, status, grace_until")
       .eq("user_id", data.claims.sub)
       .maybeSingle();
-    if (error || ent?.pro !== true) return notFound(response);
+    if (error || !isProEntitled(ent)) return notFound(response);
     // Per-account file: never let a shared cache keep it for the next visitor.
     response.headers.set("Cache-Control", "private, no-store");
     return response;

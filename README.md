@@ -20,6 +20,41 @@ You can start editing the page by modifying `app/page.js`. The page auto-updates
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Stripe (FOV Pro)
+
+Checkout is off until launch (`CHECKOUT_ENABLED` in `app/api/checkout/route.js`). Keep it `false` in lockstep with `lib/launch.js` and the landing page. Use test-mode keys (`sk_test_…`, `price_…` from test mode) in development.
+
+Routes:
+
+- `POST /api/checkout`: starts a subscription Checkout session (`plan` = `monthly` | `annual`). It grants no access.
+- `POST /api/stripe/webhook`: verifies the signature on the raw body, then writes `public.entitlements`. Access is granted only here.
+- `POST /api/stripe/portal`: opens the Billing Portal for the signed-in user.
+
+Forward webhooks to your local server with the Stripe CLI (it prints a `whsec_…` signing secret; put that in `.env.local` as `STRIPE_WEBHOOK_SECRET`):
+
+```bash
+stripe login
+stripe listen --forward-to localhost:3000/api/stripe/webhook
+```
+
+Send test events. Events from `stripe trigger` carry no Plot-LV user, so the webhook acknowledges them and writes nothing. To test real entitlement changes, complete a test checkout (or replay a real event with `stripe events resend <evt_id>`):
+
+```bash
+stripe trigger checkout.session.completed
+stripe trigger customer.subscription.created
+stripe trigger customer.subscription.updated
+stripe trigger customer.subscription.deleted
+stripe trigger invoice.payment_failed
+```
+
+Run the unit tests (no network, no Stripe account needed):
+
+```bash
+npm test
+```
+
+Migration: `supabase/migrations/20261104_stripe_subscriptions.sql` adds the Stripe columns to `entitlements`. Apply it to the Plot-LV project before the webhook goes live.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

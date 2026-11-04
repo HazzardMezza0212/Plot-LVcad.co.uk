@@ -2,6 +2,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isSameOrigin } from "@/lib/requestGuard";
 import { cleanCameraSpec } from "@/lib/customCamera";
 import { rateLimit } from "@/lib/rateLimit";
+import { isProEntitled } from "@/lib/stripe/entitlement";
 
 // A Pro user's custom cameras for the FOV tool at /cctv, kept per account in
 // public.custom_cameras. Row-level security does the real enforcement (own rows only; adding
@@ -42,8 +43,8 @@ export async function POST(request) {
   const { spec, error } = cleanCameraSpec(body?.spec);
   if (error) return json({ error }, 400);
 
-  const { data: ent } = await supabase.from("entitlements").select("pro").eq("user_id", user.id).maybeSingle();
-  if (ent?.pro !== true) return json({ error: "Custom cameras are a Pro feature." }, 403);
+  const { data: ent } = await supabase.from("entitlements").select("pro, status, grace_until").eq("user_id", user.id).maybeSingle();
+  if (!isProEntitled(ent)) return json({ error: "Custom cameras are a Pro feature." }, 403);
 
   const { data, error: dbError } = await supabase.from("custom_cameras").insert({ spec }).select("id").single();
   if (dbError) {

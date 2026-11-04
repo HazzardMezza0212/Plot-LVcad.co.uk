@@ -1,4 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
+import { isProEntitled } from "@/lib/stripe/entitlement";
 
 // "Is this visitor signed in, and do they have FOV Pro?" Read by the FOV tool at /cctv on load,
 // for the Pro gate and the account link. Uses the session cookie; guests, signed-out visitors and
@@ -15,10 +16,10 @@ export async function GET() {
 
     const { data, error } = await supabase
       .from("entitlements")
-      .select("pro")
+      .select("pro, status, grace_until")
       .eq("user_id", user.id)
       .maybeSingle();
-    return Response.json({ pro: !error && data?.pro === true, signedIn: true }, { headers: NO_STORE });
+    return Response.json({ pro: !error && isProEntitled(data), signedIn: true }, { headers: NO_STORE });
   } catch {
     return Response.json({ pro: false, signedIn: false }, { headers: NO_STORE });
   }
