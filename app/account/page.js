@@ -7,10 +7,35 @@ import DataControls from "@/components/account/DataControls";
 import { createClient } from "@/lib/supabase/server";
 import { loadProfile } from "@/lib/account";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import ProPanel from "@/components/account/ProPanel";
+import { getStripe, findCustomer, currentSubscription, isProOpen, missingProSettings } from "@/lib/pro";
+import { VAT_NOTE } from "@/lib/legal";
 import { isProEntitled } from "@/lib/stripe/entitlement";
-import ManageBilling from "@/components/account/ManageBilling";
 
-export const metadata = { title: "Your account | Plot-LV" };
+// The user's live Pro subscription, for the plan line and renewal date.
+// Read from Stripe; any error just hides the details.
+async function loadSubscription(userId) {
+  const stripe = getStripe();
+  if (!stripe) return null;
+  try {
+    const customer = await findCustomer(stripe, userId);
+    const sub = await currentSubscription(stripe, customer?.id);
+    if (!sub) return null;
+    const item = sub.items?.data?.[0];
+    const end = sub.current_period_end || item?.current_period_end;
+    const price = item?.price;
+    return {
+      plan: price?.recurring?.interval || null,
+      periodEnd: end ? new Date(end * 1000).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" }) : null,
+      amount: price?.unit_amount ? `£${(price.unit_amount / 100).toFixed(price.unit_amount % 100 ? 2 : 0)}` : null,
+      cancelAtPeriodEnd: Boolean(sub.cancel_at_period_end || sub.cancel_at),
+    };
+  } catch {
+    return null;
+  }
+}
+
+export const metadata = { title: "Your account" };
 
 export default async function AccountPage({ searchParams }) {
   const params = await searchParams;
@@ -20,10 +45,10 @@ export default async function AccountPage({ searchParams }) {
   const profile = user ? await loadProfile(supabase, user) : null;
   // FOV Pro: the user's own row in public.entitlements (readable by them, writable by nobody).
   const { data: entitlement } = user
-    ? await supabase.from("entitlements").select("pro, status, grace_until, stripe_customer_id").eq("user_id", user.id).maybeSingle()
+    ? await supabase.from("entitlements").select("pro, status, grace_until").eq("user_id", user.id).maybeSingle()
     : { data: null };
   const pro = isProEntitled(entitlement);
-  const hasBilling = Boolean(entitlement?.stripe_customer_id);
+  const sub = user && pro ? await loadSubscription(user.id) : null;
 
   const meta = user?.user_metadata || {};
   const fullName = meta.full_name || "";
@@ -68,22 +93,18 @@ export default async function AccountPage({ searchParams }) {
             Your account is ready. Launch FOV below to get started.
           </div>
         )}
+        {params.pro === "welcome" && (
+          <div className="acct-banner success">
+            <span className="tick-badge" aria-hidden="true">✓</span>
+            Payment received. FOV Pro switches on within a few seconds; refresh if this page still says Free.
+          </div>
+        )}
         {params.password && (
           <div className="acct-banner success">
             <span className="tick-badge" aria-hidden="true">✓</span>
             Password updated.
           </div>
         )}
-        {params.upgraded && (pro ? (
-          <div className="acct-banner success">
-            <span className="tick-badge" aria-hidden="true">✓</span>
-            Welcome to FOV Pro.
-          </div>
-        ) : (
-          <div className="acct-banner">
-            Thanks. Pro switches on once Stripe confirms your payment, usually within a minute. Refresh this page if it hasn&apos;t yet.
-          </div>
-        ))}
         {!user && (
           <div className="acct-banner">
             Accounts are being switched on. You can use the FOV preview as a guest in the meantime.
@@ -131,7 +152,6 @@ export default async function AccountPage({ searchParams }) {
                   {memberSince && <div><dt>Member since</dt><dd>{memberSince}</dd></div>}
                   <div><dt>Plan</dt><dd>{pro ? "FOV Pro" : "FOV preview (free)"}</dd></div>
                 </dl>
-                {hasBilling && <ManageBilling />}
                 <Link href="/account/password" className="auth-link">Change password →</Link>
               </section>
             )}
@@ -155,30 +175,25 @@ export default async function AccountPage({ searchParams }) {
                 <h3 className="card-title mono">Your data</h3>
                 <p className="pp-desc">
                   Download everything we hold about you, or delete your account.
-                  See the <Link href="/privacy" className="inline-a">privacy notice</Link>.
+                  See the <Link href="/legal#privacy" className="inline-a">privacy notice</Link>.
                 </p>
                 <DataControls />
               </section>
             )}
 
-            <section className="acct-card muted-card">
-              <div className="pp-head">
-                <span className="pp-code mono">PLOT-LV-FLAME</span>
-                <span className="status-pill closed">Not available</span>
-              </div>
-              <h3 className="display flame-title">Flame</h3>
-              <p className="pp-desc">
-                Fire alarm layout and compliance. Not on sale at the moment.
-              </p>
-              {user && profile?.marketing_opt_in ? (
-                <p className="notify-done mono">● You&apos;ll hear when Flame opens (product updates are on)</p>
-              ) : user ? (
-                <p className="pp-desc small-note">Turn on product updates above to hear when it opens.</p>
-              ) : (
-                <Link href="/#updates" className="btn-secondary small">Get updates</Link>
-              )}
-              <Link href="/flame" className="auth-link block">How Flame works →</Link>
-            </section>
+            {user && (
+              <section className="acct-card" id="pro">
+                <h3 className="card-title mono">FOV Pro</h3>
+                <ProPanel
+                  pro={pro}
+                  open={isProOpen}
+                  initialPlan={params.upgrade}
+                  sub={sub}
+                  missing={missingProSettings()}
+                  vatNote={VAT_NOTE}
+                />
+              </section>
+            )}
           </div>
         </div>
       </main>

@@ -6,7 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 // checked in the database (admin_overview() only answers for users in
 // public.site_admins); everyone else gets a 404.
 
-export const metadata = { title: "Sign-ups | Plot-LV", robots: { index: false } };
+export const metadata = { title: "Sign-ups", robots: { index: false } };
 export const dynamic = "force-dynamic";
 
 const fmt = (iso) =>

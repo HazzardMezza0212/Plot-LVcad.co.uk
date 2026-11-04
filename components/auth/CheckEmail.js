@@ -20,6 +20,8 @@ export default function CheckEmail({ email, kind, onBack }) {
   }, [cooldown]);
 
   async function resend() {
+    if (cooldown > 0) return;
+    setCooldown(30); // start the wait straight away so a double-click sends one email
     const supabase = getBrowserClient();
     setMessage("");
     if (TURNSTILE_SITE_KEY && !captchaToken) {
@@ -40,7 +42,6 @@ export default function CheckEmail({ email, kind, onBack }) {
           });
     captcha.current?.reset();
     setMessage(error ? friendlyError(error) : "Sent again. It can take a minute to arrive.");
-    setCooldown(30);
   }
 
   return (

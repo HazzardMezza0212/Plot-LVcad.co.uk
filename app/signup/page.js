@@ -4,7 +4,7 @@ import SignupForm from "@/components/auth/SignupForm";
 import GuestNotice from "@/components/auth/GuestNotice";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
-export const metadata = { title: "Create your account | Plot-LV" };
+export const metadata = { title: "Create your account" };
 
 export default function SignupPage() {
   return (

@@ -1,20 +1,13 @@
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "http://localhost:3000";
+import { MODELS } from "@/lib/fov/cameraPages";
+import { CANONICAL_URL } from "@/lib/site";
 
 export default function sitemap() {
+  const now = new Date();
   return [
-    {
-      url: siteUrl,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 1,
-    },
-    {
-      url: `${siteUrl}/flame`,
-      lastModified: new Date(),
-      changeFrequency: "weekly",
-      priority: 0.9,
-    },
-    { url: `${siteUrl}/privacy`, changeFrequency: "yearly", priority: 0.3 },
-    { url: `${siteUrl}/terms`, changeFrequency: "yearly", priority: 0.3 },
+    { url: CANONICAL_URL, lastModified: now, changeFrequency: "weekly", priority: 1 },
+    { url: `${CANONICAL_URL}/cctv-cameras`, lastModified: now, changeFrequency: "weekly", priority: 0.9 },
+    ...MODELS.map((m) => ({ url: `${CANONICAL_URL}/cctv-cameras/${m.slug}`, changeFrequency: "monthly", priority: 0.7 })),
+    { url: `${CANONICAL_URL}/getting-started`, lastModified: now, changeFrequency: "monthly", priority: 0.6 },
+    { url: `${CANONICAL_URL}/legal`, changeFrequency: "yearly", priority: 0.2 },
   ];
 }

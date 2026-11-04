@@ -1,6 +1,7 @@
 import { createClient } from "@/lib/supabase/server";
 import { isSameOrigin } from "@/lib/requestGuard";
 import { removeContact } from "@/lib/mailingList";
+import { getStripe, findCustomer, isActiveStatus } from "@/lib/pro";
 
 // Permanently delete the signed-in user's account (right to erasure).
 // Removes them from the mailing list first, then deletes the account; the
@@ -16,6 +17,27 @@ export async function POST(request) {
   const body = await request.json().catch(() => ({}));
   if (body?.confirm !== "DELETE") {
     return Response.json({ error: "Type DELETE to confirm." }, { status: 400 });
+  }
+
+  // A paying Pro customer must not keep being billed after deleting their
+  // account: cancel any live Pro subscription first, and stop if that fails.
+  const stripe = getStripe();
+  if (stripe) {
+    try {
+      const customer = await findCustomer(stripe, user.id);
+      if (customer) {
+        const subs = await stripe.subscriptions.list({ customer: customer.id, status: "all", limit: 20 });
+        for (const sub of subs.data) {
+          if (sub.metadata?.kind === "pro" && isActiveStatus(sub.status)) await stripe.subscriptions.cancel(sub.id);
+        }
+      }
+    } catch (err) {
+      console.error("[account] cancel subscription before delete failed", err?.message);
+      return Response.json(
+        { error: "Couldn't cancel your FOV Pro subscription, so nothing was deleted. Please try again or contact us." },
+        { status: 502 }
+      );
+    }
   }
 
   const removed = await removeContact(user.email);

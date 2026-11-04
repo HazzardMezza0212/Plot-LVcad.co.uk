@@ -4,7 +4,7 @@ import NewPasswordForm from "@/components/auth/NewPasswordForm";
 import { getUser } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
-export const metadata = { title: "Choose a new password | Plot-LV" };
+export const metadata = { title: "Choose a new password" };
 
 export default async function NewPasswordPage() {
   if (!isSupabaseConfigured) redirect("/account");

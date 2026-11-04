@@ -1,32 +1,32 @@
 import Link from "next/link";
+import Header from "@/components/site/Header";
+import Footer from "@/components/site/Footer";
+import OpenPlanner from "@/components/site/OpenPlanner";
 
 export const metadata = {
-  title: "404 — Zone Not Found | Plot-LV",
+  title: "Page not found",
+  robots: { index: false },
 };
 
 export default function NotFound() {
   return (
-    <>
-      <div className="grid-bg"></div>
-      <div className="notfound">
-        <div className="notfound-frame">
-          <div className="frame-label">
-            <span>DWG-404 · UNKNOWN ZONE</span>
-            <span className="status fault">
-              <span className="fault-dot"></span> FAULT
-            </span>
+    <div className="v2">
+      <div className="wrap">
+        <Header />
+        <section style={{ padding: "90px 0 60px", textAlign: "center" }}>
+          <span className="kicker">404 · Blind spot</span>
+          <h1 className="big disp" style={{ fontSize: "clamp(44px,8vw,110px)" }}>
+            No camera covers <em className="hl">this page</em>.
+          </h1>
+          <p className="lede">It&apos;s been moved, renamed, or never existed. Try one of these instead.</p>
+          <div className="ctas">
+            <OpenPlanner arrow />
+            <Link className="btn btn-g" href="/cctv-cameras">Camera library</Link>
+            <Link className="btn btn-g" href="/">Home</Link>
           </div>
-          <div className="notfound-code display">404</div>
-          <h1>This zone isn&apos;t on the drawing.</h1>
-          <p>
-            The page you&apos;re looking for has been moved, renamed, or never
-            existed on this floor plan.
-          </p>
-          <Link href="/" className="btn-primary">
-            ← Back to the floor plan
-          </Link>
-        </div>
+        </section>
+        <Footer />
       </div>
-    </>
+    </div>
   );
 }

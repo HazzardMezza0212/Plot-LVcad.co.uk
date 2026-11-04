@@ -3,7 +3,7 @@ import ForgotForm from "@/components/auth/ForgotForm";
 import GuestNotice from "@/components/auth/GuestNotice";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 
-export const metadata = { title: "Reset your password | Plot-LV" };
+export const metadata = { title: "Reset your password" };
 
 export default function ForgotPage() {
   return (
