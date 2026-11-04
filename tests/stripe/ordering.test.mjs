@@ -7,18 +7,6 @@ const row = (db) => db.rows.get(USER);
 const at = (secondsLater) => NOW_SECONDS + secondsLater;
 const run = (db, evt) => handleStripeEvent(evt, { db, now: NOW });
 
-// Records which duplicate subscriptions were cancelled and refunded.
-function fakeBilling() {
-  const calls = [];
-  return {
-    calls,
-    async cancelAndRefund(subscriptionId) {
-      calls.push(subscriptionId);
-      return "cancelled-and-refunded";
-    },
-  };
-}
-
 // Ordering guard: last_event_created
 
 test("an older event delivered late cannot overwrite a newer state", async () => {
@@ -73,43 +61,25 @@ test("rows with no ordering marker (manual grants) accept any event", async () =
   assert.equal(row(db).status, "active");
 });
 
-// Duplicate subscriptions
+// Second live subscription: logged only
 
-test("a second live subscription is cancelled and refunded, and does not take over the entitlement", async () => {
+test("a second live subscription is logged and does not change the entitlement", async () => {
   const db = createFakeDb([{ user_id: USER, status: "active", stripe_subscription_id: SUB, stripe_customer_id: CUSTOMER, pro: true }]);
-  const billing = fakeBilling();
-  const res = await handleStripeEvent(event("customer.subscription.created", subscription({ id: "sub_second", status: "active" }), "evt_dup_sub"), { db, now: NOW, billing });
-  assert.equal(res.outcome, "cancelled-and-refunded");
-  assert.deepEqual(billing.calls, ["sub_second"]);
+  const res = await run(db, event("customer.subscription.created", subscription({ id: "sub_second", status: "active" }), "evt_dup_sub"));
+  assert.equal(res.outcome, "duplicate-logged");
   assert.equal(row(db).stripe_subscription_id, SUB);
   assert.equal(row(db).status, "active");
   assert.equal(db.writes.length, 0);
 });
 
-test("without a billing client a second live subscription is left alone", async () => {
+test("later events for the second subscription are logged too and change nothing", async () => {
   const db = createFakeDb([{ user_id: USER, status: "active", stripe_subscription_id: SUB, stripe_customer_id: CUSTOMER, pro: true }]);
-  const res = await run(db, event("customer.subscription.created", subscription({ id: "sub_second", status: "active" }), "evt_dup_nobilling"));
-  assert.equal(res.outcome, "ignored");
+  await run(db, event("customer.subscription.created", subscription({ id: "sub_second", status: "active" }), "evt_d1"));
+  const res = await run(db, event("customer.subscription.updated", subscription({ id: "sub_second", status: "past_due" }), "evt_d2"));
+  assert.equal(res.outcome, "duplicate-logged");
   assert.equal(row(db).stripe_subscription_id, SUB);
-});
-
-test("if cancelling the duplicate fails, the event is not recorded so Stripe retries it", async () => {
-  const db = createFakeDb([{ user_id: USER, status: "active", stripe_subscription_id: SUB, stripe_customer_id: CUSTOMER, pro: true }]);
-  const billing = { async cancelAndRefund() { throw new Error("stripe down"); } };
-  const evt = event("customer.subscription.created", subscription({ id: "sub_second", status: "active" }), "evt_dup_fail");
-  await assert.rejects(handleStripeEvent(evt, { db, now: NOW, billing }));
-  assert.equal(db.events.has("evt_dup_fail"), false);
-});
-
-test("a cancelled duplicate's own deletion event does not touch the entitlement", async () => {
-  const db = createFakeDb([{ user_id: USER, status: "active", stripe_subscription_id: SUB, stripe_customer_id: CUSTOMER, pro: true }]);
-  const billing = fakeBilling();
-  await handleStripeEvent(event("customer.subscription.created", subscription({ id: "sub_second", status: "active" }), "evt_d1"), { db, now: NOW, billing });
-  const writes = db.writes.length;
-  const res = await handleStripeEvent(event("customer.subscription.deleted", subscription({ id: "sub_second", status: "canceled" }), "evt_d2"), { db, now: NOW, billing });
-  assert.equal(res.outcome, "ignored");
-  assert.equal(row(db).stripe_subscription_id, SUB);
-  assert.equal(db.writes.length, writes);
+  assert.equal(row(db).status, "active");
+  assert.equal(db.writes.length, 0);
 });
 
 test("checkout completing for a second subscription does not repoint the entitlement", async () => {
