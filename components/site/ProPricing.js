@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import OpenPlanner from "./OpenPlanner";
-import { PRO_PLANS, PRO_LIVE } from "@/lib/plans";
+import { PRO_PLANS, PRO_LIVE, YEARLY_SAVING } from "@/lib/plans";
 import ProNotify from "./ProNotify";
 import { VAT_NOTE } from "@/lib/legal";
 
@@ -18,7 +18,18 @@ function Tick({ pro }) {
 
 export default function ProPricing() {
   const [plan, setPlan] = useState("yearly");
+  const [signedIn, setSignedIn] = useState(false);
   const p = PRO_PLANS[plan];
+
+  // Whether this visitor is signed in. Read on the client so the homepage stays static.
+  useEffect(() => {
+    let live = true;
+    fetch("/api/me/entitlements", { cache: "no-store" })
+      .then((r) => r.json())
+      .then((d) => { if (live) setSignedIn(Boolean(d.signedIn)); })
+      .catch(() => {});
+    return () => { live = false; };
+  }, []);
 
   return (
     <div className="pg2">
@@ -49,7 +60,7 @@ export default function ProPricing() {
         </div>
         <span className="muted" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           {p.note}
-          {plan === "yearly" && <span className="badge">Save £29</span>}
+          {plan === "yearly" && <span className="badge">Save £{YEARLY_SAVING}</span>}
         </span>
         <span className="muted" style={{ marginTop: 14 }}>
           For installers, consultants and integrators who hand designs to clients.
@@ -62,14 +73,16 @@ export default function ProPricing() {
           <li><Tick pro />PDF coverage report under your logo, plus exports</li>
           <li><Tick pro />Your own custom cameras</li>
         </ul>
-        {PRO_LIVE ? (
+        {signedIn ? (
           <>
-            <Link className="btn btn-o" href={`/account?upgrade=${plan}#pro`}>
-              Get FOV Pro <span className="ar" aria-hidden="true">→</span>
+            <Link className="btn btn-o" href={`/account?upgrade=${plan}#upgrade`}>
+              {PRO_LIVE ? "Get FOV Pro" : "Go to your account"} <span className="ar" aria-hidden="true">→</span>
             </Link>
-            <span className="muted mono" style={{ fontSize: 12, marginTop: 12, textAlign: "center" }}>
-              {VAT_NOTE} · secure checkout by Stripe · cancel any time
-            </span>
+            {PRO_LIVE && (
+              <span className="muted mono" style={{ fontSize: 12, marginTop: 12, textAlign: "center" }}>
+                {VAT_NOTE} · secure checkout by Stripe · cancel any time
+              </span>
+            )}
           </>
         ) : (
           <ProNotify />

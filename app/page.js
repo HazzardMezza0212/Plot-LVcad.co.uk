@@ -5,7 +5,7 @@ import ProPricing from "@/components/site/ProPricing";
 import CameraDome from "@/components/site/CameraDome";
 import { CANONICAL_URL } from "@/lib/site";
 import { MODELS } from "@/lib/fov/cameraPages";
-import { PRO_LIVE } from "@/lib/plans";
+import { PRO_LIVE, PRO_PLANS } from "@/lib/plans";
 
 export const metadata = {
   title: { absolute: "Plot-LV FOV — free CCTV field of view calculator & layout planner" },
@@ -29,8 +29,8 @@ const JSON_LD = {
     { "@type": "Offer", name: "Free", price: "0", priceCurrency: "GBP" },
     ...(PRO_LIVE
       ? [
-          { "@type": "Offer", name: "FOV Pro monthly", price: "19", priceCurrency: "GBP" },
-          { "@type": "Offer", name: "FOV Pro yearly", price: "199", priceCurrency: "GBP" },
+          { "@type": "Offer", name: "FOV Pro monthly", price: String(PRO_PLANS.monthly.amount), priceCurrency: "GBP" },
+          { "@type": "Offer", name: "FOV Pro yearly", price: String(PRO_PLANS.yearly.amount), priceCurrency: "GBP" },
         ]
       : []),
   ],

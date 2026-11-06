@@ -1,6 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { isSameOrigin } from "@/lib/requestGuard";
-import { getStripe, isProOpen, PRICE_IDS, useAutomaticTax, findCustomer, currentSubscription } from "@/lib/pro";
+import { getStripe, isProOpen, PRICE_IDS, useAutomaticTax, findCustomer, currentSubscription, FOUNDING_COUPON_ID, foundingSeatsLeftNow } from "@/lib/pro";
 import { isPlanKey } from "@/lib/plans";
 import { TERMS_VERSION } from "@/lib/legal";
 import { originOf } from "@/lib/site";
@@ -68,6 +68,10 @@ export async function POST(request) {
       consent_at: consentAt,
     };
     const base = originOf(request);
+    // Founding offer: yearly only, while places remain. Stripe doesn't allow a discount and
+    // promotion codes on the same session, so a founding purchase can't stack another code.
+    const founding = plan === "yearly" && (await foundingSeatsLeftNow(stripe)) > 0;
+    if (founding) metadata.founding = "yes";
 
     const session = await stripe.checkout.sessions.create({
       mode: "subscription",
@@ -80,14 +84,14 @@ export async function POST(request) {
       ...(useAutomaticTax ? { automatic_tax: { enabled: true } } : {}),
       billing_address_collection: "required",
       tax_id_collection: { enabled: true },
-      allow_promotion_codes: true,
+      ...(founding ? { discounts: [{ coupon: FOUNDING_COUPON_ID }] } : { allow_promotion_codes: true }),
       custom_text: {
         submit: {
           message: `Renews every ${plan === "yearly" ? "year" : "month"} until you cancel. Cancel any time from your Plot-LV account. Terms: ${base}/legal#pro`,
         },
       },
-      success_url: `${base}/account?pro=welcome#pro`,
-      cancel_url: `${base}/account?upgrade=${plan}#pro`,
+      success_url: `${base}/account?pro=welcome#upgrade`,
+      cancel_url: `${base}/account?upgrade=${plan}#upgrade`,
     });
     return json({ url: session.url });
   } catch (err) {

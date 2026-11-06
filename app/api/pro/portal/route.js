@@ -19,7 +19,7 @@ export async function POST(request) {
     if (!customer) return Response.json({ error: "No FOV Pro billing found on this account." }, { status: 404 });
     const portal = await stripe.billingPortal.sessions.create({
       customer: customer.id,
-      return_url: `${originOf(request)}/account#pro`,
+      return_url: `${originOf(request)}/account#upgrade`,
     });
     return Response.json({ url: portal.url }, { headers: { "Cache-Control": "no-store" } });
   } catch (err) {

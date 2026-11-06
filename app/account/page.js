@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { loadProfile } from "@/lib/account";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import ProPanel from "@/components/account/ProPanel";
-import { getStripe, findCustomer, currentSubscription, isProOpen, missingProSettings } from "@/lib/pro";
+import { getStripe, findCustomer, currentSubscription, isProOpen, missingProSettings, foundingSeatsLeftNow } from "@/lib/pro";
 import { VAT_NOTE } from "@/lib/legal";
 import { isProEntitled } from "@/lib/stripe/entitlement";
 
@@ -49,6 +49,8 @@ export default async function AccountPage({ searchParams }) {
     : { data: null };
   const pro = isProEntitled(entitlement);
   const sub = user && pro ? await loadSubscription(user.id) : null;
+  // Founding places still open (0 when the offer isn't set up or checkout is closed).
+  const foundingLeft = user && !pro && isProOpen ? await foundingSeatsLeftNow(getStripe()) : 0;
 
   const meta = user?.user_metadata || {};
   const fullName = meta.full_name || "";
@@ -182,8 +184,8 @@ export default async function AccountPage({ searchParams }) {
             )}
 
             {user && (
-              <section className="acct-card" id="pro">
-                <h3 className="card-title mono">FOV Pro</h3>
+              <section className="acct-card" id="upgrade">
+                <h3 className="card-title mono">{pro ? "You have FOV Pro" : "Upgrade to FOV Pro"}</h3>
                 <ProPanel
                   pro={pro}
                   open={isProOpen}
@@ -191,6 +193,7 @@ export default async function AccountPage({ searchParams }) {
                   sub={sub}
                   missing={missingProSettings()}
                   vatNote={VAT_NOTE}
+                  foundingLeft={foundingLeft}
                 />
               </section>
             )}

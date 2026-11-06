@@ -2,13 +2,13 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { PRO_PLANS } from "@/lib/plans";
+import { PRO_PLANS, FOUNDING } from "@/lib/plans";
 
 // FOV Pro on the account page.
 // Not Pro: choose monthly/yearly, tick the two required boxes, go to Stripe.
 // Pro: show the plan and renewal, and open Stripe's billing page to cancel,
 // change plan, update the card or download invoices.
-export default function ProPanel({ pro, open, initialPlan = "yearly", sub, missing = [], vatNote }) {
+export default function ProPanel({ pro, open, initialPlan = "yearly", sub, missing = [], vatNote, foundingLeft = 0 }) {
   const [plan, setPlan] = useState(initialPlan === "monthly" ? "monthly" : "yearly");
   const [startNow, setStartNow] = useState(false);
   const [agree, setAgree] = useState(false);
@@ -62,7 +62,7 @@ export default function ProPanel({ pro, open, initialPlan = "yearly", sub, missi
     return (
       <div className="pro-panel">
         <p className="pp-desc" style={{ margin: 0 }}>
-          FOV Pro is coming soon: DXF import, walls from your CAD layer, pixel density per camera, coverage per room and
+          FOV Pro opens soon: DXF import, walls from your CAD layer, pixel density per camera, coverage per room and
           a PDF report. <Link href="/#pricing" className="inline-a">Get told when it launches</Link>.
         </p>
         {missing.length > 0 && (
@@ -73,14 +73,21 @@ export default function ProPanel({ pro, open, initialPlan = "yearly", sub, missi
   }
 
   const p = PRO_PLANS[plan];
+  const showFounding = plan === "yearly" && foundingLeft > 0;
   return (
     <div className="pro-panel">
       <div className="bill" role="group" aria-label="Billing period">
-        <button type="button" aria-pressed={plan === "monthly"} onClick={() => setPlan("monthly")}>Monthly · £19</button>
-        <button type="button" aria-pressed={plan === "yearly"} onClick={() => setPlan("yearly")}>Yearly · £199</button>
+        <button type="button" aria-pressed={plan === "monthly"} onClick={() => setPlan("monthly")}>Monthly · {PRO_PLANS.monthly.label}</button>
+        <button type="button" aria-pressed={plan === "yearly"} onClick={() => setPlan("yearly")}>Yearly · {PRO_PLANS.yearly.label}</button>
       </div>
       <div className="price">{p.label}<small> / {p.per}</small></div>
       <p className="small" style={{ marginTop: 2 }}>{p.note} {vatNote}</p>
+      {showFounding && (
+        <p className="small" style={{ marginTop: 2 }}>
+          Founding member offer: £{FOUNDING.firstYear} for your first year, then {PRO_PLANS.yearly.label} a year.{" "}
+          {foundingLeft} of {FOUNDING.places} places left.
+        </p>
+      )}
 
       <label className="chk">
         <input type="checkbox" checked={startNow} onChange={(e) => setStartNow(e.target.checked)} />
@@ -106,7 +113,8 @@ export default function ProPanel({ pro, open, initialPlan = "yearly", sub, missi
         {busy ? "Opening secure payment…" : "Continue to secure payment →"}
       </button>
       <p className="small" style={{ textAlign: "center" }}>
-        Payment by Stripe. We never see your card. Cancel any time from this page.
+        Payment by Stripe. We never see your card. Cancel any time from this page.{" "}
+        <Link href="/legal#terms" target="_blank">Terms</Link> · <Link href="/legal#privacy" target="_blank">Privacy</Link>
       </p>
       {error && <p className="err" role="alert">{error}</p>}
     </div>
