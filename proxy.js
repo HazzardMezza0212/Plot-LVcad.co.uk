@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { SUPABASE_URL, SUPABASE_KEY, isSupabaseConfigured } from "@/lib/supabase/config";
 import { isProEntitled } from "@/lib/stripe/entitlement";
+import { isProPath } from "@/lib/cctv-pro/gate";
 
 // Runs before the routes in `config.matcher` (including the static CCTV tool
 // in public/cctv). It refreshes the Supabase session cookie and:
@@ -17,10 +18,10 @@ import { isProEntitled } from "@/lib/stripe/entitlement";
 // Its Pro code (DXF import, layer mapping, Pro calculations) is built into a
 // separate folder so that only paying accounts ever download it.
 
-const PRO_CODE = "/cctv/assets/pro/";
-
 export async function proxy(request) {
-  const isProCode = request.nextUrl.pathname.startsWith(PRO_CODE);
+  // Defence in depth: any path that points at Pro code, however it is encoded, takes the Pro check.
+  // The route handler (app/cctv/assets/pro/[file]) makes the same check, and the files are not in public/.
+  const isProCode = isProPath(request.nextUrl.pathname);
   if (!isSupabaseConfigured) return isProCode ? notFound() : NextResponse.next();
 
   let response = NextResponse.next({ request });

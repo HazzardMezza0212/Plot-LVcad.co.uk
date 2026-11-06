@@ -21,6 +21,12 @@ const nextConfig = {
   // day. Ignored entirely in production builds.
   allowedDevOrigins: ["192.168.1.*"],
 
+  // FOV Pro code lives in private/cctv-pro, outside public/. Include it in the deployed function
+  // so the route at app/cctv/assets/pro/[file] can read it (brackets escaped: the key is a glob).
+  outputFileTracingIncludes: {
+    "/cctv/assets/pro/\\[file\\]": ["./private/cctv-pro/**/*"],
+  },
+
   // Basic security headers on every response.
   async headers() {
     return [

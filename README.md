@@ -81,3 +81,14 @@ update public.site_settings set value='{"open":true}',  updated_at=now() where k
 ```
 
 Migration `supabase/migrations/20261106_site_settings.sql` creates the table. Apply it before using the switch.
+
+## FOV tool: where the build goes
+
+The FOV tool's build (its `dist/` folder) is split in two when copied into this site:
+
+- `dist/assets/pro/` goes to **`private/cctv-pro/`**. This is FOV Pro code. It is never served from `public/`. It is served only by `app/cctv/assets/pro/[file]/route.js`, which checks the session and the Pro entitlement on every request.
+- Everything else in `dist/` (`index.html` and `dist/assets/` minus `pro/`) goes to **`public/cctv/`**.
+
+Clear the old copies first (`public/cctv` and `private/cctv-pro`), then copy. `npm test` and `npm run build` both run `scripts/check-pro-private.mjs`, which fails if any file under `public/cctv/assets/pro` exists, or if a file under `public/` matches a Pro file byte for byte.
+
+Do not add Pro code under `public/`. Static files there are served to everyone, and the encoded-path variants of `/cctv/assets/pro/...` are not guarded by the proxy matcher.
