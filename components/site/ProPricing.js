@@ -6,6 +6,7 @@ import OpenPlanner from "./OpenPlanner";
 import { PRO_PLANS, PRO_LIVE, YEARLY_SAVING } from "@/lib/plans";
 import ProNotify from "./ProNotify";
 import { VAT_NOTE } from "@/lib/legal";
+import { signupHref, loginHref } from "@/lib/upgradeLinks";
 
 function Tick({ pro }) {
   return (
@@ -84,6 +85,19 @@ export default function ProPricing() {
                 {VAT_NOTE} · secure checkout by Stripe · cancel any time
               </span>
             )}
+          </>
+        ) : PRO_LIVE ? (
+          // Signed out after launch: create an account, then choose the plan on the account page.
+          <>
+            <Link className="btn btn-o" href={signupHref(plan)}>
+              Get FOV Pro <span className="ar" aria-hidden="true">→</span>
+            </Link>
+            <span className="muted small" style={{ marginTop: 10, textAlign: "center" }}>
+              Already have an account? <Link className="inline-a" href={loginHref(plan)}>Log in</Link>
+            </span>
+            <span className="muted mono" style={{ fontSize: 12, marginTop: 12, textAlign: "center" }}>
+              {VAT_NOTE} · secure checkout by Stripe · cancel any time
+            </span>
           </>
         ) : (
           <ProNotify />

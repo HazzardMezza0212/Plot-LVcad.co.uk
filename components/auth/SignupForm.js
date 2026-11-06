@@ -8,8 +8,9 @@ import { MARKETING_WORDING, TERMS_VERSION, PRIVACY_VERSION } from "@/lib/legal";
 import CheckEmail from "./CheckEmail";
 import { track } from "@/lib/analytics";
 import Turnstile, { TURNSTILE_SITE_KEY } from "@/components/Turnstile";
+import { signupNextPath } from "@/lib/upgradeLinks";
 
-export default function SignupForm() {
+export default function SignupForm({ plan = null }) {
   const [state, setState] = useState("idle"); // idle | loading | done
   const [error, setError] = useState("");
   const [password, setPassword] = useState("");
@@ -55,7 +56,7 @@ export default function SignupForm() {
           terms_version: TERMS_VERSION,
           privacy_version: PRIVACY_VERSION,
         },
-        emailRedirectTo: `${window.location.origin}/auth/confirm?next=%2Faccount%3Fwelcome%3D1`,
+        emailRedirectTo: `${window.location.origin}/auth/confirm?next=${encodeURIComponent(signupNextPath(plan))}`,
         captchaToken: captchaToken || undefined,
       },
     });

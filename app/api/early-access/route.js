@@ -1,5 +1,5 @@
 import { Resend } from "resend";
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { guardPublicPost } from "@/lib/publicForm";
 import { getContactStatus } from "@/lib/mailingList";
 
@@ -15,12 +15,11 @@ const EMAIL = /^[^@\s]+@[^@\s]+\.[^@\s]+$/;
 const clip = (v, n) => (typeof v === "string" ? v.trim().slice(0, n) : "");
 
 export async function POST(request) {
-  // The FOV tool (a separate static build) also posts here with source "tool" and cannot
-  // show the CAPTCHA, so only the landing page form is CAPTCHA-checked. Both are
-  // same-origin checked and rate limited.
+  // Every request needs the CAPTCHA, the same-origin check and the rate limit. (The FOV tool no
+  // longer has its own join form, so there is no CAPTCHA-free "tool" route any more.)
   const guard = await guardPublicPost(request, {
     name: "early-access", limit: 5, windowMs: 60 * 60 * 1000,
-    captcha: (b) => b.source !== "tool",
+    captcha: true,
   });
   if (guard.response) return guard.response;
   const body = guard.body;
@@ -38,11 +37,13 @@ export async function POST(request) {
   const updates = body.updates === true;
   const source = SOURCES.includes(body.source) ? body.source : "landing";
 
-  const supabase = await createClient();
-  if (!supabase) {
+  // join_pro_early_access can only be run with the server key (migration 20261106_lock_early_access),
+  // so this route, with its CAPTCHA and rate limit, is the only way in.
+  const admin = createAdminClient();
+  if (!admin) {
     return Response.json({ error: "Early access isn't open just yet. Please try again later." }, { status: 503 });
   }
-  const { error } = await supabase.rpc("join_pro_early_access", {
+  const { error } = await admin.rpc("join_pro_early_access", {
     p_email: email, p_name: name, p_role: role, p_wants: wants, p_updates_opt_in: updates, p_source: source,
   });
   if (error) {
