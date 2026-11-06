@@ -58,6 +58,7 @@ export default function ProPricing() {
           {p.label}
           <small> / {p.per}</small>
         </div>
+        <span className="muted small">For business customers only.</span>
         <span className="muted" style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
           {p.note}
           {plan === "yearly" && <span className="badge">Save £{YEARLY_SAVING}</span>}

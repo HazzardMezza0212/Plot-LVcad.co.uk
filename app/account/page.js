@@ -8,7 +8,7 @@ import { createClient } from "@/lib/supabase/server";
 import { loadProfile } from "@/lib/account";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import ProPanel from "@/components/account/ProPanel";
-import { getStripe, findCustomer, currentSubscription, isProOpen, missingProSettings, foundingSeatsLeftNow } from "@/lib/pro";
+import { getStripe, findCustomer, currentSubscription, isProOpen, isProCheckoutOpenNow, missingProSettings, foundingSeatsLeftNow } from "@/lib/pro";
 import { VAT_NOTE } from "@/lib/legal";
 import { isProEntitled } from "@/lib/stripe/entitlement";
 
@@ -51,6 +51,8 @@ export default async function AccountPage({ searchParams }) {
   const sub = user && pro ? await loadSubscription(user.id) : null;
   // Founding places still open (0 when the offer isn't set up or checkout is closed).
   const foundingLeft = user && !pro && isProOpen ? await foundingSeatsLeftNow(getStripe()) : 0;
+  // Pause switch for new purchases, read live. Existing subscribers aren't affected by it.
+  const paused = Boolean(user) && !pro && isProOpen && !(await isProCheckoutOpenNow());
 
   const meta = user?.user_metadata || {};
   const fullName = meta.full_name || "";
@@ -189,6 +191,7 @@ export default async function AccountPage({ searchParams }) {
                 <ProPanel
                   pro={pro}
                   open={isProOpen}
+                  paused={paused}
                   initialPlan={params.upgrade}
                   sub={sub}
                   missing={missingProSettings()}

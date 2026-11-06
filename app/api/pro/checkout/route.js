@@ -1,21 +1,33 @@
 import { createClient } from "@/lib/supabase/server";
 import { isSameOrigin } from "@/lib/requestGuard";
-import { getStripe, isProOpen, PRICE_IDS, useAutomaticTax, findCustomer, currentSubscription, FOUNDING_COUPON_ID, foundingSeatsLeftNow } from "@/lib/pro";
-import { isPlanKey } from "@/lib/plans";
+import {
+  getStripe,
+  isProOpen,
+  isProCheckoutOpenNow,
+  PRICE_IDS,
+  useAutomaticTax,
+  findCustomer,
+  currentSubscription,
+  FOUNDING_COUPON_ID,
+  foundingSeatsLeftNow,
+} from "@/lib/pro";
+import { validateProCheckoutBody } from "@/lib/checkout-request";
 import { TERMS_VERSION } from "@/lib/legal";
 import { originOf } from "@/lib/site";
 
-// Start a FOV Pro checkout for the signed-in user.
+// Start a FOV Pro checkout for the signed-in user. FOV Pro is sold to business customers only.
 //
 // - Only signed-in users with a confirmed email can start one, and the
 //   payment is tied to their user id, so Pro unlocks on the right account.
 // - The browser only chooses "monthly" or "yearly"; the price comes from the
 //   server's environment variables.
-// - Both consent boxes (start now / agree to terms incl. auto-renewal) must
-//   be ticked. What they agreed to, and when, is stored on the Stripe
+// - Both boxes must be ticked: the business-use box and the terms box (which covers
+//   automatic renewal). What they agreed to, and when, is stored on the Stripe
 //   checkout and subscription as evidence.
+// - Stripe collects the business name at checkout (name_collection).
 // - Nothing is granted here. Pro is switched on only by the Stripe webhook
 //   once payment is confirmed.
+// - The pause switch (site_settings 'pro_checkout') blocks new purchases only.
 
 const NO_STORE = { "Cache-Control": "no-store" };
 const json = (body, status = 200) => Response.json(body, { status, headers: NO_STORE });
@@ -23,6 +35,9 @@ const json = (body, status = 200) => Response.json(body, { status, headers: NO_S
 export async function POST(request) {
   if (!isSameOrigin(request)) return json({ error: "Please use the button on plotlvcad.co.uk." }, 403);
   if (!isProOpen) return json({ error: "FOV Pro checkout isn't open yet." }, 403);
+  if (!(await isProCheckoutOpenNow())) {
+    return json({ error: "FOV Pro checkout is paused. Please try again later." }, 403);
+  }
 
   let body;
   try {
@@ -30,11 +45,9 @@ export async function POST(request) {
   } catch {
     return json({ error: "Bad request." }, 400);
   }
-  const { plan, startNow, agreeTerms } = body || {};
-  if (!isPlanKey(plan)) return json({ error: "Choose monthly or yearly." }, 400);
-  if (startNow !== true || agreeTerms !== true) {
-    return json({ error: "Please tick both boxes to continue." }, 400);
-  }
+  const check = validateProCheckoutBody(body);
+  if (check.error) return json({ error: check.error }, 400);
+  const plan = check.plan;
 
   const supabase = await createClient();
   const { data: { user } = {} } = supabase ? await supabase.auth.getUser() : {};
@@ -63,7 +76,7 @@ export async function POST(request) {
       plan,
       user_id: user.id,
       terms_version: TERMS_VERSION,
-      consent_start_now: "yes",
+      consent_business_use: "yes",
       consent_terms_and_renewal: "yes",
       consent_at: consentAt,
     };
@@ -83,6 +96,7 @@ export async function POST(request) {
       subscription_data: { metadata },
       ...(useAutomaticTax ? { automatic_tax: { enabled: true } } : {}),
       billing_address_collection: "required",
+      name_collection: { business: { enabled: true, optional: false } },
       tax_id_collection: { enabled: true },
       ...(founding ? { discounts: [{ coupon: FOUNDING_COUPON_ID }] } : { allow_promotion_codes: true }),
       custom_text: {

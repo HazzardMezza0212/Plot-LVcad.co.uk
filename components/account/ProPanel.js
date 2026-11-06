@@ -4,13 +4,13 @@ import { useState } from "react";
 import Link from "next/link";
 import { PRO_PLANS, FOUNDING } from "@/lib/plans";
 
-// FOV Pro on the account page.
+// FOV Pro on the account page. Sold to business customers only.
 // Not Pro: choose monthly/yearly, tick the two required boxes, go to Stripe.
 // Pro: show the plan and renewal, and open Stripe's billing page to cancel,
 // change plan, update the card or download invoices.
-export default function ProPanel({ pro, open, initialPlan = "yearly", sub, missing = [], vatNote, foundingLeft = 0 }) {
+export default function ProPanel({ pro, open, paused = false, initialPlan = "yearly", sub, missing = [], vatNote, foundingLeft = 0 }) {
   const [plan, setPlan] = useState(initialPlan === "monthly" ? "monthly" : "yearly");
-  const [startNow, setStartNow] = useState(false);
+  const [businessUse, setBusinessUse] = useState(false);
   const [agree, setAgree] = useState(false);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
@@ -72,6 +72,16 @@ export default function ProPanel({ pro, open, initialPlan = "yearly", sub, missi
     );
   }
 
+  if (paused) {
+    return (
+      <div className="pro-panel">
+        <p className="pp-desc" style={{ margin: 0 }}>
+          Checkout is paused for a moment. Please try again later.
+        </p>
+      </div>
+    );
+  }
+
   const p = PRO_PLANS[plan];
   const showFounding = plan === "yearly" && foundingLeft > 0;
   return (
@@ -81,7 +91,7 @@ export default function ProPanel({ pro, open, initialPlan = "yearly", sub, missi
         <button type="button" aria-pressed={plan === "yearly"} onClick={() => setPlan("yearly")}>Yearly · {PRO_PLANS.yearly.label}</button>
       </div>
       <div className="price">{p.label}<small> / {p.per}</small></div>
-      <p className="small" style={{ marginTop: 2 }}>{p.note} {vatNote}</p>
+      <p className="small" style={{ marginTop: 2 }}>For business customers only. {p.note} {vatNote}</p>
       {showFounding && (
         <p className="small" style={{ marginTop: 2 }}>
           Founding member offer: £{FOUNDING.firstYear} for your first year, then {PRO_PLANS.yearly.label} a year.{" "}
@@ -90,11 +100,8 @@ export default function ProPanel({ pro, open, initialPlan = "yearly", sub, missi
       )}
 
       <label className="chk">
-        <input type="checkbox" checked={startNow} onChange={(e) => setStartNow(e.target.checked)} />
-        <span>
-          Start Pro now. I understand that if I cancel within 14 days, I&apos;ll pay for the days I&apos;ve already used.{" "}
-          <Link href="/legal#pro" target="_blank">Cancellation rights</Link>
-        </span>
+        <input type="checkbox" checked={businessUse} onChange={(e) => setBusinessUse(e.target.checked)} />
+        <span>I&apos;m buying FOV Pro for my business (as a sole trader, company or other organisation), not as a consumer.</span>
       </label>
       <label className="chk">
         <input type="checkbox" checked={agree} onChange={(e) => setAgree(e.target.checked)} />
@@ -107,14 +114,14 @@ export default function ProPanel({ pro, open, initialPlan = "yearly", sub, missi
       <button
         type="button"
         className="pbtn"
-        disabled={!startNow || !agree || busy}
-        onClick={() => post("/api/pro/checkout", { plan, startNow, agreeTerms: agree })}
+        disabled={!businessUse || !agree || busy}
+        onClick={() => post("/api/pro/checkout", { plan, businessUse, agreeTerms: agree })}
       >
         {busy ? "Opening secure payment…" : "Continue to secure payment →"}
       </button>
       <p className="small" style={{ textAlign: "center" }}>
         Payment by Stripe. We never see your card. Cancel any time from this page.{" "}
-        <Link href="/legal#terms" target="_blank">Terms</Link> · <Link href="/legal#privacy" target="_blank">Privacy</Link>
+        <Link href="/legal#pro" target="_blank">Cancellation and refunds</Link> · <Link href="/legal#privacy" target="_blank">Privacy</Link>
       </p>
       {error && <p className="err" role="alert">{error}</p>}
     </div>

@@ -63,3 +63,21 @@ npm test
 ```
 
 Migration `supabase/migrations/20261104_stripe_subscriptions.sql` adds the `status`, `current_period_end` and `grace_until` columns to `entitlements`. Apply it before the grace rule goes live.
+
+## Pause Pro checkout
+
+Pausing stops new FOV Pro purchases. It takes effect on the next request, with no redeploy. It doesn't touch existing subscribers: the webhook, the billing portal and Pro access keep working. The switch is the `pro_checkout` row in `public.site_settings`. A missing or unreadable row also counts as paused.
+
+Pause (run in the Supabase SQL editor on the Plot-LV project):
+
+```sql
+update public.site_settings set value='{"open":false}', updated_at=now() where key='pro_checkout';
+```
+
+Resume:
+
+```sql
+update public.site_settings set value='{"open":true}',  updated_at=now() where key='pro_checkout';
+```
+
+Migration `supabase/migrations/20261106_site_settings.sql` creates the table. Apply it before using the switch.
